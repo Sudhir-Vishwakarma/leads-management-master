@@ -162,6 +162,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           title: "Task/Meet",
           subtitle: "Manage your tasks and meetings",
         };
+      case "shopnow": 
+      return {
+        title: "Shop Now",
+        subtitle: "Browse and purchase your favorite tools and upgrades",
+      };  
       default:
         return {
           title: "Dashboard",

@@ -6,7 +6,6 @@ import {
   MessageCircle,
   Megaphone,
   Users,
-  ShoppingBag,
   Calendar,
   Settings,
   X,
@@ -18,10 +17,12 @@ import {
   UserCog,
   Award,
   Globe,
+  ShoppingCart,
+  Briefcase,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
-import { FaWhatsapp } from "react-icons/fa"; // ✅ Replaced WhatsApp icon
+import { FaWhatsapp } from "react-icons/fa";
 
 interface SidebarProps {
   closeSidebar?: () => void;
@@ -74,16 +75,16 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   );
 
   const toggleMenu = (menu: string) => {
-    setExpandedMenu(prev => prev === menu ? null : menu);
+    setExpandedMenu(prev => (prev === menu ? null : menu));
   };
 
-  const isMenuActive = (path: string) => 
+  const isMenuActive = (path: string) =>
     location.pathname.startsWith(`/dashboard${path}`);
 
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">
       {/* Header */}
-      <div className="flex items-center justify-between h-16 flex-shrink-0 px-4 bg-background border-b border-border">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-border">
         <div className="flex items-center">
           <img
             src="/logo.png"
@@ -118,13 +119,12 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             Analytics
           </NavLink>
 
-          {/* Chats Menu */}
           <NavLink to="/dashboard/chats" className={({ isActive }) => getNavLinkClass(isActive)}>
             <MessageCircle className="mr-3 h-5 w-5" />
             Chats
           </NavLink>
 
-          {/* Campaigns Menu */}
+          {/* Campaigns */}
           <div>
             <button
               onClick={() => toggleMenu("campaigns")}
@@ -141,12 +141,12 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               {expandedMenu === "campaigns" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             <div
-              ref={el => submenuRefs.current.campaigns = el}
+              ref={el => (submenuRefs.current.campaigns = el)}
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 expandedMenu === "campaigns" ? "opacity-100" : "opacity-0 max-h-0"
               }`}
               style={{
-                maxHeight: expandedMenu === "campaigns" ? `${submenuHeights.campaigns}px` : "0px"
+                maxHeight: expandedMenu === "campaigns" ? `${submenuHeights.campaigns}px` : "0px",
               }}
             >
               <div className="pl-8 space-y-1 mt-1">
@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             </div>
           </div>
 
-          {/* Customers Menu */}
+          {/* Customers */}
           <div>
             <button
               onClick={() => toggleMenu("customers")}
@@ -183,12 +183,12 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               {expandedMenu === "customers" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             <div
-              ref={el => submenuRefs.current.customers = el}
+              ref={el => (submenuRefs.current.customers = el)}
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 expandedMenu === "customers" ? "opacity-100" : "opacity-0 max-h-0"
               }`}
               style={{
-                maxHeight: expandedMenu === "customers" ? `${submenuHeights.customers}px` : "0px"
+                maxHeight: expandedMenu === "customers" ? `${submenuHeights.customers}px` : "0px",
               }}
             >
               <div className="pl-8 space-y-1 mt-1">
@@ -208,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             </div>
           </div>
 
-          {/* MyServices Menu */}
+          {/* MyServices */}
           <div>
             <button
               onClick={() => toggleMenu("myServices")}
@@ -219,18 +219,18 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               }`}
             >
               <div className="flex items-center">
-                <ShoppingBag className="mr-3 h-5 w-5" />
+                <Briefcase className="mr-3 h-5 w-5" />
                 MyServices
               </div>
               {expandedMenu === "myServices" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             <div
-              ref={el => submenuRefs.current.myServices = el}
+              ref={el => (submenuRefs.current.myServices = el)}
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 expandedMenu === "myServices" ? "opacity-100" : "opacity-0 max-h-0"
               }`}
               style={{
-                maxHeight: expandedMenu === "myServices" ? `${submenuHeights.myServices}px` : "0px"
+                maxHeight: expandedMenu === "myServices" ? `${submenuHeights.myServices}px` : "0px",
               }}
             >
               <div className="pl-8 space-y-1 mt-1">
@@ -254,10 +254,16 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             </div>
           </div>
 
-          {/* Task/Meet Menu */}
+          {/* Task/Meet */}
           <NavLink to="/dashboard/taskmeet" className={({ isActive }) => getNavLinkClass(isActive)}>
             <Calendar className="mr-3 h-5 w-5" />
             Task/Meet
+          </NavLink>
+
+          {/* Shop Now */}
+          <NavLink to="/dashboard/shopnow" className={({ isActive }) => getNavLinkClass(isActive)}>
+            <ShoppingCart className="mr-3 h-5 w-5" />
+            Shop Now
           </NavLink>
         </nav>
 

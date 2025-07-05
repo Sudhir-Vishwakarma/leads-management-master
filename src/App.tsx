@@ -31,6 +31,7 @@ import { CustomerTypeProvider } from "./context/CustomerTypeContext";
 import { MeetProvider } from "./context/MeetContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import MeetingNotificationMonitor from "./pages/NotificationMonitor";
+import ShopNow from "./pages/ShopNow/ShopNow";
 import Chats from "./pages/Chats";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -76,6 +77,7 @@ function App() {
                   <Route path="chats" element={<Chats />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="taskmeet" element={<Meet />} />
+                  <Route path="shopnow" element={<ShopNow />} />
                   <Route path="campaigns">
                     <Route path="meta" element={<Meta />} />
                     <Route path="google" element={<Google />} />

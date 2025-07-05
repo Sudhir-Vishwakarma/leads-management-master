@@ -43,6 +43,7 @@
     "react-window": "^1.8.11",
     "recharts": "^2.9.0",
     "slick-carousel": "^1.8.1",
+    "swiper": "^11.2.10",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0"
@@ -54,6 +55,7 @@
     "@types/react-dom": "^18.2.17",
     "@types/react-slick": "^0.23.13",
     "@types/react-window": "^1.8.8",
+    "@types/swiper": "^5.4.3",
     "@vitejs/plugin-react": "^4.5.0",
     "autoprefixer": "^10.4.18",
     "eslint": "^9.9.1",

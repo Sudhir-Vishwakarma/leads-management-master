@@ -329,13 +329,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                 </div>
 
                 <div className="p-3 border-t border-border">
-                  <Link
+                  {/* <Link
                     to="/dashboard/notifications"
                     className="block text-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400"
                     onClick={() => setShowNotifications(false)}
                   >
                     View all notifications
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             )}

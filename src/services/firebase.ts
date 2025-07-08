@@ -141,11 +141,11 @@ const extractMedia = async (data: any): Promise<any> => {
           body: JSON.stringify({ mediaId, mediaType }),
         }
       );
-      
+
       if (!response.ok) {
         throw new Error(`Webhook error: ${response.status}`);
       }
-      
+
       const result = await response.json();
       return {
         type: mediaType,
@@ -252,7 +252,7 @@ export const updateLeadByUser = (
 };
 
 export const getChatDocument = (accountId: string, chatId: string) =>
-  doc(db, `accounts/${accountId}/discussion/${chatId}`);
+    doc(db, `accounts/${accountId}/discussion/${chatId}`);
 
 export const getChatsByAccount = async (accountId: string): Promise<Chat[]> => {
   try {
@@ -266,21 +266,22 @@ export const getChatsByAccount = async (accountId: string): Promise<Chat[]> => {
         const name =
           data.client_name || data.contact?.name || data.name || `+${chatId}`;
 
-        let lastMessage = data.lastMessage;
-        if (!lastMessage) {
-          const msgRef = collection(
-            db,
-            `accounts/${accountId}/discussion/${chatId}/messages`
-          );
-          const q = query(msgRef, orderBy("timestamp", "desc"), limit(1));
-          const msgSnap = await getDocs(q);
-          if (!msgSnap.empty) {
-            const msgData = msgSnap.docs[0].data();
-            lastMessage = {
-              body: extractMessageBody(msgData),
-              timestamp: msgData.timestamp,
-            };
-          }
+        // Always get last message from messages collection
+        const msgRef = collection(
+          db,
+          `accounts/${accountId}/discussion/${chatId}/messages`
+        );
+        const q = query(msgRef, orderBy("timestamp", "desc"), limit(1));
+        const msgSnap = await getDocs(q);
+        let lastMessage: { body: string; timestamp: Timestamp } | undefined =
+          undefined;
+
+        if (!msgSnap.empty) {
+          const msgData = msgSnap.docs[0].data();
+          lastMessage = {
+            body: extractMessageBody(msgData),
+            timestamp: msgData.timestamp,
+          };
         }
 
         return {
@@ -372,7 +373,6 @@ export const getMessagesByChat = async (
         video: media?.type === "video" ? media : undefined,
         document: media?.type === "document" ? media : undefined,
         audio: media?.type === "audio" ? media : undefined,
-
       });
     }
 
@@ -385,9 +385,7 @@ export const getMessagesByChat = async (
 
 export const subscribeChats = (
   accountId: string,
-  // chatId: string,
   callback: (chats: Chat[]) => void
-  
 ) => {
   const chatsRef = collection(db, `accounts/${accountId}/discussion`);
 
@@ -399,29 +397,21 @@ export const subscribeChats = (
         const name =
           data.client_name || data.contact?.name || data.name || `+${chatId}`;
 
-        let lastMessage = data.lastMessage;
-        if (!lastMessage) {
-          try {
-            const msgRef = collection(
-              db,
-              `accounts/${accountId}/discussion/${chatId}/messages`
-            );
-            const q = query(msgRef, orderBy("timestamp", "desc"), limit(1));
-            const msgSnap = await getDocs(q);
-            if (!msgSnap.empty) {
-              const msgData = msgSnap.docs[0].data();
+        // Always get last message from messages collection
+        const msgRef = collection(
+          db,
+          `accounts/${accountId}/discussion/${chatId}/messages`
+        );
+        const q = query(msgRef, orderBy("timestamp", "desc"), limit(1));
+        const msgSnap = await getDocs(q);
+        let lastMessage = null;
 
-              lastMessage = {
-                body: extractMessageBody(msgData),
-                timestamp: msgData.timestamp,
-              };
-            } else {
-              lastMessage = null;
-            }
-          } catch (err) {
-            console.error("Error fetching last message for chat", chatId, err);
-            lastMessage = null;
-          }
+        if (!msgSnap.empty) {
+          const msgData = msgSnap.docs[0].data();
+          lastMessage = {
+            body: extractMessageBody(msgData),
+            timestamp: msgData.timestamp,
+          };
         }
 
         const normalizedPhone = chatId.replace(/[^\d]/g, "");
@@ -496,12 +486,18 @@ export const subscribeMessages = (
   });
 };
 
+// Update the function to this:
 export const updateChatDocument = async (
   accountId: string,
   chatId: string,
   message: Message
 ) => {
   const chatRef = doc(db, `accounts/${accountId}/discussion/${chatId}`);
+
+  const currentData = (await getDoc(chatRef)).data() || {};
+  const currentUnread = currentData.unreadCount || 0;
+  const newUnread =
+    message.direction === "incoming" ? currentUnread + 1 : currentUnread;
 
   const lastMessageContent =
     extractMessageBody(message) ||
@@ -520,15 +516,19 @@ export const updateChatDocument = async (
       body: lastMessageContent,
       timestamp: message.timestamp || serverTimestamp(),
     },
+    unreadCount: message.direction === "incoming" ? increment(1) : 0,
   };
 
-  if (message.direction === "incoming") {
-    updateData.unreadCount = increment(1);
-  } else {
-    updateData.unreadCount = 0;
-  }
-
+  // Always update unreadCount based on message direction
+  
   await updateDoc(chatRef, updateData);
+  // await updateDoc(chatRef, {
+  //   lastMessage: {
+  //     body: extractMessageBody(message),
+  //     timestamp: message.timestamp || serverTimestamp(),
+  //   },
+  //   unreadCount: newUnread
+  // });
 };
 
 export const addMessageToChat = async (

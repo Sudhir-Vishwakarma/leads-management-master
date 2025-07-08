@@ -768,31 +768,6 @@
 
 // export default Dashboard;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, {
   useEffect,
   useState,
@@ -808,7 +783,7 @@ import {
   fetchLeadsFromFirestore,
   importLeadsFromCSV,
 } from "../services/api";
-import { exportToCSV } from "../utils/exportCsv";
+// import { exportToCSV } from "../utils/exportCsv";
 import axios from "axios";
 import Papa from "papaparse";
 import { getAuth } from "firebase/auth";
@@ -839,6 +814,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useMeet } from "../context/MeetContext";
 import { fetchCustomFields } from "../services/customFields";
+import { differenceInHours, parseISO } from "date-fns";
 
 // Import Swiper React components and styles
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -934,9 +910,7 @@ const KPICard: React.FC<KPICardProps> = ({
                 <h3 className={`text-sm font-medium ${colors.text}`}>
                   {title}
                 </h3>
-                <p className="mt-1 text-2xl font-bold text-gray-900">
-                  {value}
-                </p>
+                <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
               </div>
               <div
                 className={`${colors.iconBg} rounded-lg p-2.5 ${colors.iconColor}`}
@@ -973,11 +947,6 @@ const KPICard: React.FC<KPICardProps> = ({
     </div>
   );
 };
-
-
-
-
-
 
 // Main Dashboard component
 const Dashboard: React.FC = () => {
@@ -1046,14 +1015,45 @@ const Dashboard: React.FC = () => {
       ).length;
 
       // Calculate rates
-      const newContactRate =
-        totalLeads > 0 ? Math.round((contactedLeads / totalLeads) * 100) : 0;
+
+      // Contact Rates
+      const newContactRate = 0;
+
+      // Meeting Rates
+
+      const now = new Date();
+      const meetingDoneRecent = list.filter((lead) => {
+        return (
+          lead.lead_status === "Meeting Done" &&
+          lead.meeting_done_time &&
+          differenceInHours(now, parseISO(lead.meeting_done_time)) <= 48
+        );
+      }).length;
+
       const newMeetingRate =
-        contactedLeads > 0
-          ? Math.round((meetingDone / contactedLeads) * 100)
-          : 0;
+        totalLeads > 0 ? Math.round((meetingDoneRecent / totalLeads) * 100) : 0;
+
+      // Feedback Rates
+      const leadsWithRecentComments = list.filter((lead) => {
+        if (!lead.customerComments || !Array.isArray(lead.customerComments))
+          return false;
+
+        const latestComment = lead.customerComments.reduce(
+          (latest, comment) => {
+            const commentDate = parseISO(comment.timestamp);
+            return commentDate > latest ? commentDate : latest;
+          },
+          new Date(0)
+        );
+
+        const hoursDifference = differenceInHours(now, latestComment);
+        return hoursDifference <= 24;
+      }).length;
+
       const newFeedbackRate =
-        meetingDone > 0 ? Math.round((dealDone / meetingDone) * 100) : 0;
+        totalLeads > 0
+          ? Math.round((leadsWithRecentComments / totalLeads) * 100)
+          : 0;
 
       // Update state with new rates
       setContactRate(newContactRate);
@@ -1305,13 +1305,33 @@ const Dashboard: React.FC = () => {
   };
 
   // Event handlers
+  // const handleStatusUpdate = (leadId: string, newStatus: string) => {
+  //   setLeads(
+  //     leads.map((lead) =>
+  //       lead.id === leadId ? { ...lead, lead_status: newStatus } : lead
+  //     )
+  //   );
+  // };
+
   const handleStatusUpdate = (leadId: string, newStatus: string) => {
-    setLeads(
-      leads.map((lead) =>
-        lead.id === leadId ? { ...lead, lead_status: newStatus } : lead
-      )
-    );
-  };
+  const now = new Date().toISOString();
+
+  setLeads((prevLeads) =>
+    prevLeads.map((lead) => {
+      if (lead.id !== leadId) return lead;
+
+      const updatedLead: Lead = { ...lead, lead_status: newStatus };
+
+      if (newStatus === "Meeting Done") {
+        updatedLead.meeting_done_time = now;
+      } else {
+        delete updatedLead.meeting_done_time;
+      }
+
+      return updatedLead;
+    })
+  );
+};
 
   const handleFollowUpScheduled = (
     leadId: string,

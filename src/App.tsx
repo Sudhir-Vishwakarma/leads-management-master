@@ -27,12 +27,15 @@ import Basic from "./pages/Customers/Basic";
 import Advance from "./pages/Customers/Advance";
 import Pro from "./pages/Customers/Pro";
 import NotificationPage from "./pages/Notification";
-import { CustomerTypeProvider } from "./context/CustomerTypeContext";
-import { MeetProvider } from "./context/MeetContext";
-import { NotificationProvider } from "./context/NotificationContext";
 import MeetingNotificationMonitor from "./pages/NotificationMonitor";
 import ShopNow from "./pages/ShopNow/ShopNow";
 import Chats from "./pages/Chats";
+import Database from "./pages/Database/Database";
+import Orders from "./pages/Orders/Orders";
+import SaveAndEarn from "./pages/SaveAndEarn/SaveAndEarn";
+import { CustomerTypeProvider } from "./context/CustomerTypeContext";
+import { MeetProvider } from "./context/MeetContext";
+import { NotificationProvider } from "./context/NotificationContext";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
@@ -78,6 +81,9 @@ function App() {
                   <Route path="settings" element={<Settings />} />
                   <Route path="taskmeet" element={<Meet />} />
                   <Route path="shopnow" element={<ShopNow />} />
+                  <Route path="database" element={<Database />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="saveandearn" element={<SaveAndEarn />} />
                   <Route path="campaigns">
                     <Route path="meta" element={<Meta />} />
                     <Route path="google" element={<Google />} />

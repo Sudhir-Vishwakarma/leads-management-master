@@ -76,104 +76,121 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   }, []);
 
   const getPageInfo = () => {
-    const path = location.pathname.split("/").pop()?.toLowerCase();
-    switch (path) {
-      case "dashboard":
-        return {
-          title: "Leads",
-          subtitle: "Welcome to your leads management dashboard",
-        };
-      case "analytics":
-        return {
-          title: "Analytics",
-          subtitle: "Key insights from your lead data",
-        };
-      case "chats":
-        return {
-          title: "Chats",
-          subtitle: "Manage your conversations with customers",
-        };
-      case "settings":
-        return {
-          title: "Settings",
-          subtitle: "Manage your account settings and preferences",
-        };
-      // Campaigns
-      case "meta":
-        return {
-          title: "Meta",
-          subtitle: "Manage your Meta advertising campaigns",
-        };
-      case "google":
-        return {
-          title: "Google",
-          subtitle: "Manage your Google advertising campaigns",
-        };
-      case "whatsapp":
-        return {
-          title: "WhatsApp",
-          subtitle: "Manage your WhatsApp messaging campaigns",
-        };
-      // Customers
-      case "basic":
-        return {
-          title: "Basic",
-          subtitle: "Manage your basic customer accounts",
-        };
-      case "advance":
-        return {
-          title: "Advance",
-          subtitle: "Manage advanced customer relationships",
-        };
-      case "pro":
-        return {
-          title: "Pro",
-          subtitle: "Manage premium customer accounts",
-        };
-      // MyServices
-      case "sgoogle":
-        return {
-          title: "Google",
-          subtitle: "Manage your Google service integrations",
-        };
-      case "smeta":
-        return {
-          title: "Meta",
-          subtitle: "Manage your Meta platform services",
-        };
-      case "swhatsapp":
-        return {
-          title: "WhatsApp",
-          subtitle: "Manage your WhatsApp business services",
-        };
-      case "sweb":
-        return {
-          title: "Web",
-          subtitle: "Manage your website integrations",
-        };
-      case "sapp":
-        return {
-          title: "App",
-          subtitle: "Manage your mobile application services",
-        };
-      // Tasks & Meetings
-      case "taskmeet":
-        return {
-          title: "Task/Meet",
-          subtitle: "Manage your tasks and meetings",
-        };
-      case "shopnow": 
+  const path = location.pathname.split("/").pop()?.toLowerCase();
+  switch (path) {
+    case "dashboard":
+      return {
+        title: "Leads",
+        subtitle: "Welcome to your leads management dashboard",
+      };
+    case "analytics":
+      return {
+        title: "Analytics",
+        subtitle: "Key insights from your lead data",
+      };
+    case "chats":
+      return {
+        title: "Chats",
+        subtitle: "Manage your conversations with customers",
+      };
+    case "settings":
+      return {
+        title: "Settings",
+        subtitle: "Manage your account settings and preferences",
+      };
+    // Campaigns
+    case "meta":
+      return {
+        title: "Meta",
+        subtitle: "Manage your Meta advertising campaigns",
+      };
+    case "google":
+      return {
+        title: "Google",
+        subtitle: "Manage your Google advertising campaigns",
+      };
+    case "whatsapp":
+      return {
+        title: "WhatsApp",
+        subtitle: "Manage your WhatsApp messaging campaigns",
+      };
+    // Customers
+    case "basic":
+      return {
+        title: "Basic",
+        subtitle: "Manage your basic customer accounts",
+      };
+    case "advance":
+      return {
+        title: "Advance",
+        subtitle: "Manage advanced customer relationships",
+      };
+    case "pro":
+      return {
+        title: "Pro",
+        subtitle: "Manage premium customer accounts",
+      };
+    // MyServices
+    case "sgoogle":
+      return {
+        title: "Google",
+        subtitle: "Manage your Google service integrations",
+      };
+    case "smeta":
+      return {
+        title: "Meta",
+        subtitle: "Manage your Meta platform services",
+      };
+    case "swhatsapp":
+      return {
+        title: "WhatsApp",
+        subtitle: "Manage your WhatsApp business services",
+      };
+    case "sweb":
+      return {
+        title: "Web",
+        subtitle: "Manage your website integrations",
+      };
+    case "sapp":
+      return {
+        title: "App",
+        subtitle: "Manage your mobile application services",
+      };
+    // Tasks & Meetings
+    case "taskmeet":
+      return {
+        title: "Task/Meet",
+        subtitle: "Manage your tasks and meetings",
+      };
+    case "shopnow":
       return {
         title: "Shop Now",
         subtitle: "Browse and purchase your favorite tools and upgrades",
-      };  
-      default:
-        return {
-          title: "Dashboard",
-          subtitle: "Welcome to your leads management dashboard",
-        };
-    }
-  };
+      };
+    // New entries
+    case "database":
+      return {
+        title: "Database",
+        subtitle: "Manage and analyze your CRM database",
+      };
+    case "orders":
+      return {
+        title: "Orders",
+        subtitle: "Track and manage all your product orders",
+      };
+    case "saveandearn":
+      return {
+        title: "Save & Earn",
+        subtitle: "Explore ways to save costs and earn rewards",
+      };
+    default:
+      return {
+        title: "Dashboard",
+        subtitle: "Welcome to your leads management dashboard",
+      };
+  }
+};
+
 
   const videoLinks: VideoLink[] = [
     {

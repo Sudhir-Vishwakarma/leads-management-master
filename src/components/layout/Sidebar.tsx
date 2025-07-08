@@ -18,7 +18,9 @@ import {
   Award,
   Globe,
   ShoppingCart,
-  Briefcase,
+  Database as DatabaseIcon,
+  ShoppingBag,
+  DollarSign,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
@@ -35,24 +37,24 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   const submenuRefs = useRef<{
     campaigns: HTMLDivElement | null;
     customers: HTMLDivElement | null;
-    myServices: HTMLDivElement | null;
+    analytics: HTMLDivElement | null;
   }>({
     campaigns: null,
     customers: null,
-    myServices: null,
+    analytics: null,
   });
 
   const [submenuHeights, setSubmenuHeights] = useState({
     campaigns: 0,
     customers: 0,
-    myServices: 0,
+    analytics: 0,
   });
 
   useEffect(() => {
     setSubmenuHeights({
       campaigns: submenuRefs.current.campaigns?.scrollHeight || 0,
       customers: submenuRefs.current.customers?.scrollHeight || 0,
-      myServices: submenuRefs.current.myServices?.scrollHeight || 0,
+      analytics: submenuRefs.current.analytics?.scrollHeight || 0,
     });
   }, []);
 
@@ -75,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   );
 
   const toggleMenu = (menu: string) => {
-    setExpandedMenu(prev => (prev === menu ? null : menu));
+    setExpandedMenu((prev) => (prev === menu ? null : menu));
   };
 
   const isMenuActive = (path: string) =>
@@ -114,10 +116,55 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             Leads
           </NavLink>
 
-          <NavLink to="/dashboard/analytics" className={({ isActive }) => getNavLinkClass(isActive)}>
-            <BarChart2 className="mr-3 h-5 w-5" />
-            Analytics
-          </NavLink>
+          {/* Analytics */}
+          <div>
+            <button
+              onClick={() => toggleMenu("analytics")}
+              className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                isMenuActive("/dashboard/analytics")
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <div className="flex items-center">
+                <BarChart2 className="mr-3 h-5 w-5" />
+                Analytics
+              </div>
+              {expandedMenu === "analytics" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+            <div
+              ref={(el) => (submenuRefs.current.analytics = el)}
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                expandedMenu === "analytics" ? "opacity-100" : "opacity-0 max-h-0"
+              }`}
+              style={{
+                maxHeight: expandedMenu === "analytics" ? `${submenuHeights.analytics}px` : "0px",
+              }}
+            >
+              <div className="pl-8 space-y-1 mt-1">
+                <NavLink to="/dashboard/analytics" className={({ isActive }) => getNavLinkClass(isActive)}>
+                  <BarChart2 className="mr-3 h-4 w-4" />
+                  All
+                </NavLink>
+                <NavLink to="/dashboard/myservices/sgoogle" className={({ isActive }) => getNavLinkClass(isActive)}>
+                  <FcGoogle className="mr-3 h-4 w-4" />
+                  Google
+                </NavLink>
+                <NavLink to="/dashboard/myservices/smeta" className={({ isActive }) => getNavLinkClass(isActive)}>
+                  <Facebook className="mr-3 h-4 w-4 text-blue-600" />
+                  Meta
+                </NavLink>
+                <NavLink to="/dashboard/myservices/swhatsapp" className={({ isActive }) => getNavLinkClass(isActive)}>
+                  <FaWhatsapp className="mr-3 h-4 w-4 text-green-500" />
+                  WhatsApp
+                </NavLink>
+                <NavLink to="/dashboard/myservices/sweb" className={({ isActive }) => getNavLinkClass(isActive)}>
+                  <Globe className="mr-3 h-4 w-4 text-blue-500" />
+                  Web
+                </NavLink>
+              </div>
+            </div>
+          </div>
 
           <NavLink to="/dashboard/chats" className={({ isActive }) => getNavLinkClass(isActive)}>
             <MessageCircle className="mr-3 h-5 w-5" />
@@ -141,7 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               {expandedMenu === "campaigns" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             <div
-              ref={el => (submenuRefs.current.campaigns = el)}
+              ref={(el) => (submenuRefs.current.campaigns = el)}
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 expandedMenu === "campaigns" ? "opacity-100" : "opacity-0 max-h-0"
               }`}
@@ -158,10 +205,10 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                   <FcGoogle className="mr-3 h-4 w-4" />
                   Google
                 </NavLink>
-                {/* <NavLink to="/dashboard/campaigns/whatsapp" className={({ isActive }) => getNavLinkClass(isActive)}>
+                <NavLink to="/dashboard/campaigns/whatsapp" className={({ isActive }) => getNavLinkClass(isActive)}>
                   <FaWhatsapp className="mr-3 h-4 w-4 text-green-500" />
                   WhatsApp
-                </NavLink> */}
+                </NavLink>
               </div>
             </div>
           </div>
@@ -183,7 +230,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               {expandedMenu === "customers" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             <div
-              ref={el => (submenuRefs.current.customers = el)}
+              ref={(el) => (submenuRefs.current.customers = el)}
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 expandedMenu === "customers" ? "opacity-100" : "opacity-0 max-h-0"
               }`}
@@ -208,52 +255,6 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             </div>
           </div>
 
-          {/* MyServices */}
-          <div>
-            <button
-              onClick={() => toggleMenu("myServices")}
-              className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
-                isMenuActive("/dashboard/myservices")
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <div className="flex items-center">
-                <Briefcase className="mr-3 h-5 w-5" />
-                MyServices
-              </div>
-              {expandedMenu === "myServices" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-            <div
-              ref={el => (submenuRefs.current.myServices = el)}
-              className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                expandedMenu === "myServices" ? "opacity-100" : "opacity-0 max-h-0"
-              }`}
-              style={{
-                maxHeight: expandedMenu === "myServices" ? `${submenuHeights.myServices}px` : "0px",
-              }}
-            >
-              <div className="pl-8 space-y-1 mt-1">
-                <NavLink to="/dashboard/myservices/sgoogle" className={({ isActive }) => getNavLinkClass(isActive)}>
-                  <FcGoogle className="mr-3 h-4 w-4" />
-                  Google
-                </NavLink>
-                <NavLink to="/dashboard/myservices/smeta" className={({ isActive }) => getNavLinkClass(isActive)}>
-                  <Facebook className="mr-3 h-4 w-4 text-blue-600" />
-                  Meta
-                </NavLink>
-                <NavLink to="/dashboard/myservices/swhatsapp" className={({ isActive }) => getNavLinkClass(isActive)}>
-                  <FaWhatsapp className="mr-3 h-4 w-4 text-green-500" />
-                  WhatsApp
-                </NavLink>
-                <NavLink to="/dashboard/myservices/sweb" className={({ isActive }) => getNavLinkClass(isActive)}>
-                  <Globe className="mr-3 h-4 w-4 text-blue-500" />
-                  Web
-                </NavLink>
-              </div>
-            </div>
-          </div>
-
           {/* Task/Meet */}
           <NavLink to="/dashboard/taskmeet" className={({ isActive }) => getNavLinkClass(isActive)}>
             <Calendar className="mr-3 h-5 w-5" />
@@ -265,6 +266,18 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             <ShoppingCart className="mr-3 h-5 w-5" />
             Shop Now
           </NavLink>
+
+          {/* Database */}
+          <NavLink to="/dashboard/database" className={({ isActive }) => getNavLinkClass(isActive)}>
+            <DatabaseIcon className="mr-3 h-5 w-5" />
+            Database
+          </NavLink>
+
+          {/* Order */}
+          <NavLink to="/dashboard/orders" className={({ isActive }) => getNavLinkClass(isActive)}>
+            <ShoppingBag className="mr-3 h-5 w-5" />
+            Order
+          </NavLink>
         </nav>
 
         {/* Footer */}
@@ -272,6 +285,12 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
           <NavLink to="/dashboard/settings" className={({ isActive }) => getNavLinkClass(isActive)}>
             <Settings className="mr-3 h-5 w-5" />
             Settings
+          </NavLink>
+
+          {/* Save & Earn */}
+          <NavLink to="/dashboard/saveandearn" className={({ isActive }) => getNavLinkClass(isActive)}>
+            <DollarSign className="mr-3 h-5 w-5 text-green-600" />
+            Save & Earn
           </NavLink>
 
           <div className="mt-4 text-sm text-muted-foreground">Beta Version 1.0.0</div>

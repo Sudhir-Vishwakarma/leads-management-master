@@ -75,6 +75,7 @@ export interface Message {
   video?: Media;
   document?: Media;
   audio?: Media;
+  interactive?: any;
 }
 
 const extractMessageBody = (data: unknown): string => {
@@ -86,13 +87,20 @@ const extractMessageBody = (data: unknown): string => {
     if (d.audio?.caption) return d.audio.caption;
     if (d.text?.body) return d.text.body;
     if (d.body) return d.body;
+    
+    // Handle interactive message responses
+    if (d.interactive?.type) {
+      if (d.interactive.type === 'button_reply') {
+        return d.interactive.button_reply?.title || 'Button selected';
+      } else if (d.interactive.type === 'list_reply') {
+        return d.interactive.list_reply?.title || 'List selection';
+      }
+    }
+    
+    // Handle original interactive messages
     if (d.interactive?.body?.text) return d.interactive.body.text;
     if (d.interactive?.header?.text) return d.interactive.header.text;
-    if (Array.isArray(d.interactive?.action?.buttons)) {
-      return d.interactive.action.buttons
-        .map((btn: any) => btn.text)
-        .join(", ");
-    }
+    
     if (d.image) return "Image";
     if (d.video) return "Video";
     if (d.document) return "Document";
@@ -354,25 +362,26 @@ export const getMessagesByChat = async (
 
     for (const d of snap.docs) {
       const data = d.data();
-
       const media = await extractMedia(data);
-      const isOutgoing = data.direction === "outgoing";
+      
+      // Determine direction based on sender comparison
+      const isOutgoing = data.from === accountPhone;
+      const normalizedDirection = isOutgoing ? "outgoing" : "incoming";
 
       messages.push({
         id: d.id,
-        from: isOutgoing ? accountPhone : data.from || "",
+        from: data.from || "",
         text: { body: extractMessageBody(data) },
         timestamp: data.timestamp as Timestamp,
         type: data.type || "text",
-        direction: isOutgoing
-          ? "outgoing"
-          : ("incoming" as "outgoing" | "incoming"),
+        direction: normalizedDirection,
         status: data.status,
         fcmToken: data.fcmToken || "",
         image: media?.type === "image" ? media : undefined,
         video: media?.type === "video" ? media : undefined,
         document: media?.type === "document" ? media : undefined,
         audio: media?.type === "audio" ? media : undefined,
+        interactive: data.interactive,
       });
     }
 
@@ -462,21 +471,25 @@ export const subscribeMessages = (
       for (const d of snapshot.docs) {
         const data = d.data();
         const media = await extractMedia(data);
-        const isOutgoing = (data.direction || "incoming") === "outgoing";
+        
+        // Determine direction based on sender comparison
+        const isOutgoing = data.from === accountPhone;
+        const normalizedDirection = isOutgoing ? "outgoing" : "incoming";
 
         messages.push({
           id: d.id,
-          from: isOutgoing ? accountPhone : data.from || "",
+          from: data.from || "",
           text: { body: extractMessageBody(data) },
           timestamp: data.timestamp as Timestamp,
           type: data.type || "text",
-          direction: data.direction || "incoming",
+          direction: normalizedDirection,
           status: data.status,
           fcmToken: data.fcmToken || "",
           image: media?.type === "image" ? media : undefined,
           video: media?.type === "video" ? media : undefined,
           document: media?.type === "document" ? media : undefined,
           audio: media?.type === "audio" ? media : undefined,
+          interactive: data.interactive,
         });
       }
       callback(messages);
@@ -486,7 +499,6 @@ export const subscribeMessages = (
   });
 };
 
-// Update the function to this:
 export const updateChatDocument = async (
   accountId: string,
   chatId: string,
@@ -519,16 +531,7 @@ export const updateChatDocument = async (
     unreadCount: message.direction === "incoming" ? increment(1) : 0,
   };
 
-  // Always update unreadCount based on message direction
-  
   await updateDoc(chatRef, updateData);
-  // await updateDoc(chatRef, {
-  //   lastMessage: {
-  //     body: extractMessageBody(message),
-  //     timestamp: message.timestamp || serverTimestamp(),
-  //   },
-  //   unreadCount: newUnread
-  // });
 };
 
 export const addMessageToChat = async (
@@ -557,6 +560,10 @@ export const addMessageToChat = async (
       messageData.document = msg.document;
     } else if (msg.audio) {
       messageData.audio = msg.audio;
+    }
+    
+    if (msg.interactive) {
+      messageData.interactive = msg.interactive;
     }
 
     const newDocRef = await addDoc(msgRef, messageData);

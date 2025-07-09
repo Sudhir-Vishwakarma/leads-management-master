@@ -12,6 +12,7 @@ import {
   subscribeMessages,
   sendWhatsAppMessage,
   MediaType,
+  // getAccountPhoneNumber,
 } from "../services/firebase";
 import { updateDoc } from "firebase/firestore";
 import { format, isToday, isYesterday } from "date-fns";
@@ -192,68 +193,114 @@ export const MediaRenderer = memo(({ mediaData }: { mediaData: MediaData }) => {
   }
 });
 
+const InteractiveRenderer = memo(({ interactive }: { interactive: any }) => {
+  if (!interactive) return null;
+
+  // Handle button reply (incoming)
+  if (interactive.type === "button_reply") {
+    return (
+      <div className="mb-1">
+        <span className="text-sm text-gray-600">
+          Selected: {interactive.button_reply?.title}
+        </span>
+      </div>
+    );
+  }
+
+  // Handle list reply (incoming)
+  if (interactive.type === "list_reply") {
+    return (
+      <div className="mb-1">
+        <span className="text-sm text-gray-600">
+          Selected: {interactive.list_reply?.title}
+        </span>
+      </div>
+    );
+  }
+
+  // Handle original interactive message (buttons)
+  if (interactive.action?.buttons) {
+    return (
+      <div className="mt-2">
+        <div className="text-sm font-medium mb-1">{interactive.body?.text}</div>
+        <div className="flex flex-wrap gap-2">
+          {interactive.action.buttons.map((button: any, index: number) => (
+            <button
+              key={index}
+              className="px-3 py-1 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700"
+              disabled
+            >
+              {button.text}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+});
+
 const MessageItem = memo(({ message }: { message: Message }) => {
   const mediaData = useMemo(() => {
     if (message.image) {
       return {
-        type: 'image' as MediaType,
+        type: "image" as MediaType,
         url: message.image.url,
         name: message.image.name,
         size: message.image.size,
       };
     } else if (message.video) {
       return {
-        type: 'video' as MediaType,
+        type: "video" as MediaType,
         url: message.video.url,
         name: message.video.name,
         size: message.video.size,
       };
     } else if (message.document) {
       return {
-        type: 'document' as MediaType,
+        type: "document" as MediaType,
         url: message.document.url,
         name: message.document.name,
         size: message.document.size,
       };
     } else if (message.audio) {
       return {
-        type: 'audio' as MediaType,
+        type: "audio" as MediaType,
         url: message.audio.url,
         name: message.audio.name,
         size: message.audio.size,
       };
     }
     return null;
-  }, [
-    message.image,
-    message.video,
-    message.document,
-    message.audio,
-  ]);
+  }, [message.image, message.video, message.document, message.audio]);
+
+  const isOutgoing = message.direction === "outgoing";
 
   return (
     <div
-      className={`flex mb-2.5 ${
-        message.direction === "outgoing" ? "justify-end" : "justify-start"
-      }`}
+      className={`flex mb-2.5 ${isOutgoing ? "justify-end" : "justify-start"}`}
     >
       <div
         className={`max-w-[75%] rounded-lg px-3 py-2 ${
-          message.direction === "outgoing"
+          isOutgoing
             ? "bg-blue-500 text-white rounded-br-none"
             : "bg-white text-gray-800 rounded-bl-none border border-gray-200"
         }`}
       >
-        {mediaData && (
-          <MediaRenderer mediaData={mediaData} />
+        {mediaData && <MediaRenderer mediaData={mediaData} />}
+
+        {message.interactive && (
+          <InteractiveRenderer interactive={message.interactive} />
         )}
 
         {message.text?.body &&
           !["Image", "Video", "Document", "Audio"].includes(
             message.text.body
           ) && <div className="text-sm">{message.text.body}</div>}
+
         <div className="flex justify-end items-center mt-1">
-          {message.direction === "outgoing" && (
+          {isOutgoing && (
             <>
               {message.status === "sending" && (
                 <Spinner className="h-3 w-3 text-white mr-1" />
@@ -297,71 +344,6 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   );
 });
 
-// const ChatListItem = memo(
-//   ({
-//     chat,
-//     isSelected,
-//     onSelect,
-//   }: {
-//     chat: Chat;
-//     isSelected: boolean;
-//     onSelect: () => void;
-//   }) => {
-//     return (
-//       <div
-//         onClick={onSelect}
-//         className={`p-3 flex items-start cursor-pointer transition ${
-//           isSelected
-//             ? "bg-blue-50 border-l-2 border-blue-500"
-//             : chat.unreadCount
-//             ? "bg-yellow-50 border-l-2 border-yellow-400"
-//             : "hover:bg-gray-50"
-//         }`}
-//       >
-//         <div className="w-9 h-9 flex-shrink-0 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold">
-//           {getInitials(chat.contact.name)}
-//           {/* {chat.contact?.name ? getInitials(chat.contact.name) : "?"} */}
-//         </div>
-//         <div className="ml-3 min-w-0 flex-1">
-//           <div className="flex justify-between items-start">
-//             <div className="flex items-center min-w-0 flex-1">
-//               <div
-//                 className={`${
-//                   chat.unreadCount ? "font-bold" : "font-semibold"
-//                 } text-gray-800 truncate text-sm`}
-//               >
-//                 {chat.contact.name}
-//               </div>
-//               {(chat.unreadCount ?? 0) > 0 && (
-//                 <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ml-2 flex-shrink-0">
-//                   {chat.unreadCount ?? 0}
-//                 </span>
-//               )}
-//             </div>
-//             {chat.lastMessage && (
-//               <div className="text-xs text-gray-400 whitespace-nowrap ml-2 flex-shrink-0">
-//                 {fmtTime(chat.lastMessage.timestamp)}
-//               </div>
-//             )}
-//           </div>
-//           {chat.lastMessage && (
-//             <div
-//               className={`text-xs truncate mt-1 ${
-//                 chat.unreadCount
-//                   ? "font-semibold text-gray-800"
-//                   : "text-gray-500"
-//               }`}
-//             >
-//               {chat.lastMessage?.body}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     );
-//   }
-// );
-
-
 const ChatListItem = memo(
   ({
     chat,
@@ -372,8 +354,6 @@ const ChatListItem = memo(
     isSelected: boolean;
     onSelect: () => void;
   }) => {
-    console.log("Chat:", chat.contact.name, "Unread Count:", chat.unreadCount); // Debug log
-
     return (
       <div
         onClick={onSelect}
@@ -393,12 +373,14 @@ const ChatListItem = memo(
             <div className="flex items-center min-w-0 flex-1">
               <div
                 className={`${
-                  chat.unreadCount && chat.unreadCount > 0 ? "font-bold" : "font-semibold"
+                  chat.unreadCount && chat.unreadCount > 0
+                    ? "font-bold"
+                    : "font-semibold"
                 } text-gray-800 truncate text-sm`}
               >
                 {chat.contact.name}
               </div>
-              {chat.unreadCount && chat.unreadCount > 0 && (
+              {(chat.unreadCount ?? 0) > 0 && (
                 <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ml-2 flex-shrink-0">
                   {chat.unreadCount}
                 </span>
@@ -426,12 +408,6 @@ const ChatListItem = memo(
     );
   }
 );
-
-
-
-
-
-
 
 export default function Chats() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -622,55 +598,6 @@ export default function Chats() {
     };
   }, [accountId]);
 
-//   useEffect(() => {
-//   if (!accountId) return;
-//   let isMounted = true;
-  
-//   const fetchAndSubscribeChats = async () => {
-//     try {
-//       if (unsubscribeChatsRef.current) unsubscribeChatsRef.current();
-//       setLoadingChats(true);
-      
-//       // Get initial chats
-//       const initialChats = await getChatsByAccount(accountId);
-//       if (!isMounted) return;
-//       setChats(initialChats);
-      
-//       // Create real-time listener
-//       const chatsRef = collection(db, `accounts/${accountId}/discussion`);
-//       const q = query(chatsRef, orderBy("lastMessage.timestamp", "desc"));
-      
-//       unsubscribeChatsRef.current = onSnapshot(q, (snapshot) => {
-//         const updatedChats = snapshot.docs.map(doc => ({
-//           id: doc.id,
-//           ...doc.data()
-//         })) as Chat[];
-        
-//         if (!isMounted) return;
-//         setChats(updatedChats);
-        
-//         // Update selected chat if it exists
-//         setSelected((prev) => {
-//           if (!prev) return null;
-//           const updatedChat = updatedChats.find(c => c.id === prev.id);
-//           return updatedChat || prev;
-//         });
-//       });
-//     } catch (err) {
-//       console.error("Error fetching chats:", err);
-//     } finally {
-//       if (isMounted) setLoadingChats(false);
-//     }
-//   };
-
-//   fetchAndSubscribeChats();
-  
-//   return () => {
-//     isMounted = false;
-//     if (unsubscribeChatsRef.current) unsubscribeChatsRef.current();
-//   };
-// }, [accountId]);
-
   const loadMessages = useCallback(
     async (chat: Chat) => {
       if (!chat || !accountId) return;
@@ -682,9 +609,6 @@ export default function Chats() {
         const msgs = await getMessagesByChat(accountId, chat.id, 1, 20);
 
         setMessages(msgs);
-        // await updateDoc(getChatDocument(accountId, chat.id), {
-        //   unreadCount: 0,
-        // });
       } catch (err) {
         console.error("Error fetching messages:", err);
       } finally {
@@ -727,8 +651,22 @@ export default function Chats() {
     };
   }, [selected, loadMessages, accountId]);
 
+  // useEffect(() => {
+  //   if (messages.length > 0) {
+  //     scrollToBottom();
+  //   }
+  // }, [messages, scrollToBottom]);
+
+  const lastMessageIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (messages.length > 0) {
+    if (messages.length === 0) return;
+
+    const lastMessage = messages[messages.length - 1];
+
+    // Only scroll if the last message is new
+    if (lastMessage.id !== lastMessageIdRef.current) {
+      lastMessageIdRef.current = lastMessage.id;
       scrollToBottom();
     }
   }, [messages, scrollToBottom]);
@@ -845,13 +783,16 @@ export default function Chats() {
     setShowAttachmentMenu(false);
   }, []);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setFileName(file.name);
-    }
-  }, []);
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setSelectedFile(file);
+        setFileName(file.name);
+      }
+    },
+    []
+  );
 
   const triggerFileInput = useCallback(() => {
     if (fileInputRef.current) {
@@ -939,11 +880,11 @@ export default function Chats() {
           body: JSON.stringify({ mediaId, mediaType: whatsappType }),
         }
       );
-      
+
       if (!response.ok) {
-        throw new Error('Failed to get permanent URL from webhook');
+        throw new Error("Failed to get permanent URL from webhook");
       }
-      
+
       const result = await response.json();
       const permanentUrl = result.downloadUrl || result.data?.downloadUrl;
 

@@ -1054,7 +1054,16 @@
 
 
 
-import React, { useState, useEffect, useCallback } from 'react';
+// Extend the Window interface to include fbAsyncInit for Facebook SDK
+declare global {
+  interface Window {
+    fbAsyncInit?: () => void;
+    FB: any;
+    gapi: any;
+  }
+}
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
 import app, { firestore } from '../../config/firebase'; 
@@ -1069,9 +1078,6 @@ import {
   FileText,
   Check,
   X,
-  // Mail, 
-  Share2, 
-  // MessageSquare,
   Loader2,
   CheckCircle,
   AlertCircle
@@ -1245,6 +1251,11 @@ const Onboarding = () => {
     whatsapp: false
   });
 
+  // Google connection states
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleStatusMessage, setGoogleStatusMessage] = useState('');
+  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
+
   // WhatsApp Business Account details
   const [whatsappBusinessAccount, setWhatsappBusinessAccount] = useState<{
     phoneNumberId?: string;
@@ -1263,6 +1274,9 @@ const Onboarding = () => {
     "idle" | "processing" | "success" | "error" | "cancelled"
   >("idle");
   const [whatsappStatusMessage, setWhatsappStatusMessage] = useState("");
+
+  // Google API loading ref
+  const googleApiLoadPromise = useRef<Promise<void> | null>(null);
 
   // Initialize Facebook SDK
   useEffect(() => {
@@ -1301,6 +1315,46 @@ const Onboarding = () => {
     initFacebookSdk();
   }, []);
 
+  // Ensure Google API is loaded and ready
+  const ensureGoogleApiLoaded = useCallback(() => {
+    if (googleApiLoadPromise.current) {
+      return googleApiLoadPromise.current;
+    }
+
+    googleApiLoadPromise.current = new Promise<void>((resolve, reject) => {
+      // Check if already loaded
+      if (window.gapi && window.gapi.load) {
+        resolve();
+        return;
+      }
+
+      // Create script element
+      const script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/platform.js';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        // Wait for gapi to be available with retries
+        const checkGapi = (retries = 20, delay = 100) => {
+          if (window.gapi && window.gapi.load) {
+            resolve();
+          } else if (retries > 0) {
+            setTimeout(() => checkGapi(retries - 1, delay), delay);
+          } else {
+            reject(new Error('Google API failed to load'));
+          }
+        };
+        checkGapi();
+      };
+      script.onerror = () => {
+        reject(new Error('Failed to load Google API'));
+      };
+      document.body.appendChild(script);
+    });
+
+    return googleApiLoadPromise.current;
+  }, []);
+
   // Add WhatsApp message listener
   useEffect(() => {
     const handleWhatsAppMessage = (event: MessageEvent) => {
@@ -1336,38 +1390,121 @@ const Onboarding = () => {
     return () => window.removeEventListener('message', handleWhatsAppMessage);
   }, []);
 
+  // Handle Google Sign-In
+  const handleGoogleConnect = async () => {
+    setGoogleLoading(true);
+    setGoogleStatusMessage("Connecting to Google...");
+    
+    try {
+      // Ensure Google API is loaded
+      await ensureGoogleApiLoaded();
+
+      // Load the auth2 module
+      await new Promise<void>((resolve, reject) => {
+        if (!window.gapi.load) {
+          reject(new Error('gapi.load is not available'));
+          return;
+        }
+
+        window.gapi.load('auth2', {
+          callback: resolve,
+          onerror: reject
+        });
+      });
+
+      // Initialize Google Auth
+      await window.gapi.auth2.init({
+        client_id: `655518493333-pi8nosro0gd9jsn8c2lbdj20689eipcg.apps.googleusercontent.com`,
+        scope: 'https://www.googleapis.com/auth/business.manage',
+      });
+
+      // Sign in
+      const authInstance = window.gapi.auth2.getAuthInstance();
+      const googleUser = await authInstance.signIn();
+      
+      // Get access token
+      const accessToken = googleUser.getAuthResponse().access_token;
+      
+      // Store token and update state
+      setGoogleAccessToken(accessToken);
+      setConnections(prev => ({ ...prev, google: true }));
+      setGoogleStatusMessage("Google connected successfully!");
+    } catch (error) {
+      console.error('Google sign-in error', error);
+      setGoogleStatusMessage("Google connection failed or canceled");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // Get Google status icon
+  const getGoogleStatusIcon = () => {
+    if (googleLoading) {
+      return <Loader2 className="w-5 h-5 animate-spin" />;
+    }
+    return <FaGoogle size={32} className={connections.google ? 'text-green-600' : 'text-gray-500'} />;
+  };
+
   // Handle Meta login
   const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
     setMetaStatusMessage("Connecting to Meta...");
 
     window.FB.login(
-      (response) => {
-        if (response.authResponse) {
-          setMetaLoginStatus("success");
-          setMetaStatusMessage("Connected to Meta!");
-          setConnections(prev => ({ ...prev, meta: true }));
-          
-          // Get user info
-          window.FB.api('/me', { fields: 'name,email,picture' }, (userResponse) => {
-            if (userResponse && !userResponse.error) {
-              setUserDetails(prev => ({
-                ...prev,
-                fullName: userResponse.name || prev.fullName,
-                email: userResponse.email || prev.email,
-                ...(userResponse.picture?.data?.url && { profilePicUrl: userResponse.picture.data.url })
-              }));
-            }
-          });
-        } else {
-          setMetaLoginStatus("error");
-          setMetaStatusMessage("Meta connection failed or canceled");
-          setConnections(prev => ({ ...prev, meta: false }));
+      (response: {
+      authResponse?: {
+        accessToken: string;
+        expiresIn: number;
+        signedRequest: string;
+        userID: string;
+        grantedScopes?: string;
+      };
+      status?: string;
+      }) => {
+      if (response.authResponse) {
+        setMetaLoginStatus("success");
+        setMetaStatusMessage("Connected to Meta!");
+        setConnections(prev => ({ ...prev, meta: true }));
+        
+        // Get user info
+        interface FBUserPictureData {
+        url?: string;
         }
+
+        interface FBUserPicture {
+        data?: FBUserPictureData;
+        }
+
+        interface FBUserResponse {
+        name?: string;
+        email?: string;
+        picture?: FBUserPicture;
+        error?: any;
+        }
+
+        window.FB.api(
+        '/me',
+        { fields: 'name,email,picture' },
+        (userResponse: FBUserResponse) => {
+          if (userResponse && !userResponse.error) {
+          setUserDetails(prev => ({
+            ...prev,
+            fullName: userResponse.name || prev.fullName,
+            email: userResponse.email || prev.email,
+            ...(userResponse.picture?.data?.url && { profilePicUrl: userResponse.picture.data.url })
+          }));
+          }
+        }
+        );
+      } else {
+        setMetaLoginStatus("error");
+        setMetaStatusMessage("Meta connection failed or canceled");
+        setConnections(prev => ({ ...prev, meta: false }));
+      }
       },
       {
-        scope: "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
-        return_scopes: true
+      scope: "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
+      return_scopes: true
       }
     );
   }, []);
@@ -1382,40 +1519,51 @@ const Onboarding = () => {
     setWhatsappStatus("processing");
     setWhatsappStatusMessage("Launching WhatsApp signup...");
 
+    interface FBLoginResponse {
+      authResponse?: {
+      accessToken: string;
+      expiresIn: number;
+      signedRequest: string;
+      userID: string;
+      grantedScopes?: string;
+      };
+      status?: string;
+    }
+
+    interface FBLoginExtras {
+      setup: { payment_method: boolean };
+      featureType: string;
+      sessionInfoVersion: string;
+    }
+
+    interface FBLoginOptions {
+      config_id: string;
+      response_type: string;
+      scope: string;
+      override_default_response_type: boolean;
+      extras: FBLoginExtras;
+    }
+
     window.FB.login(
-      (response) => {
-        if (!response.authResponse) {
-          setWhatsappStatus("error");
-          setWhatsappStatusMessage('User cancelled the login');
-        }
+      (response: FBLoginResponse) => {
+      if (!response.authResponse) {
+        setWhatsappStatus("error");
+        setWhatsappStatusMessage('User cancelled the login');
+      }
       },
       {
-        config_id: '643657128126546',
-        response_type: 'code',
-        scope: 'business_management,whatsapp_business_management',
-        override_default_response_type: true,
-        extras: {
-          setup: { payment_method: true },
-          featureType: 'embedded_signup',
-          sessionInfoVersion: '2',
-        }
+      config_id: '643657128126546',
+      response_type: 'code',
+      scope: 'business_management,whatsapp_business_management',
+      override_default_response_type: true,
+      extras: {
+        setup: { payment_method: true },
+        featureType: 'embedded_signup',
+        sessionInfoVersion: '2',
       }
+      } as FBLoginOptions
     );
   }, [metaSdkReady]);
-
-  // Get Meta status icon
-  const getMetaStatusIcon = () => {
-    switch (metaLoginStatus) {
-      case "processing":
-        return <Loader2 className="w-5 h-5 animate-spin" />;
-      case "success":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "error":
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <Share2 size={32} className={connections.meta ? 'text-blue-600' : 'text-gray-500'} />;
-    }
-  };
 
   // Get WhatsApp status icon
   const getWhatsAppStatusIcon = () => {
@@ -1476,14 +1624,6 @@ const Onboarding = () => {
         setSelected([...selectedArray, item]);
       }
     }
-  };
-
-  // Toggle Google connection
-  const toggleGoogleConnection = () => {
-    setConnections(prev => ({
-      ...prev,
-      google: !prev.google
-    }));
   };
 
   // Validate current step before proceeding
@@ -1619,6 +1759,12 @@ const Onboarding = () => {
       // Save to Firestore
       const userRef = doc(firestore, 'crm_users', cleanPhone);
       const onboardingRef = doc(userRef, "Onboarding", "onboardingData");
+      
+      // Store Google access token in main user document
+      if (googleAccessToken) {
+        await setDoc(userRef, { google_access_token: googleAccessToken }, { merge: true });
+      }
+      
       await setDoc(onboardingRef, userData);
 
       // Refresh onboarding status
@@ -1699,24 +1845,31 @@ const Onboarding = () => {
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
                     connections.google ? 'bg-green-100' : 'bg-gray-100'
                   }`}>
-                    <FaGoogle size={32} className={connections.google ? 'text-green-600' : 'text-gray-500'} />
+                    {getGoogleStatusIcon()}
                   </div>
                 </div>
                 <h3 className="text-lg font-medium text-gray-800 mb-2">Google Account</h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Google account for email, calendar, and contacts
                 </p>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-lg ${
-                    connections.google 
-                      ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  } transition`}
-                  onClick={toggleGoogleConnection}
-                >
-                  {connections.google ? 'Connected ✓' : 'Connect Google'}
-                </button>
+                {googleLoading ? (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-gray-600">{googleStatusMessage}</p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      connections.google 
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    } transition`}
+                    onClick={handleGoogleConnect}
+                    disabled={googleLoading}
+                  >
+                    {connections.google ? 'Connected ✓' : 'Connect Google'}
+                  </button>
+                )}
               </div>
               
               {/* Meta Connection */}

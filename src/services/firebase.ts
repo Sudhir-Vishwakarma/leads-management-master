@@ -19,6 +19,7 @@ import {
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import app from "../config/firebase";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -35,6 +36,7 @@ export interface Lead {
   platform: string;
   lead_status: string;
   created_time: string;
+  is_chat_lead?: boolean;
   [key: string]: string | number | boolean | undefined;
 }
 
@@ -109,6 +111,38 @@ const extractMessageBody = (data: unknown): string => {
   }
   return "";
 };
+
+
+export const getConnectedWABA = async (userPhone: string): Promise<string> => {
+  const userDocRef = doc(db, `crm_users/${userPhone}`);
+  const userDoc = await getDoc(userDocRef);
+  
+  if (!userDoc.exists()) {
+    throw new Error("User document not found");
+  }
+  
+  const wabaId = userDoc.data().connectedWABA;
+  if (!wabaId) {
+    throw new Error("No WABA connected to this user");
+  }
+  
+  return wabaId;
+};
+
+export const subscribeToLeads = (
+  userPhone: string,
+  callback: (leads: Lead[]) => void
+) => {
+  const leadsRef = collection(db, `crm_users/${userPhone}/leads`);
+  return onSnapshot(leadsRef, (snapshot) => {
+    const leads = snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() } as Lead)
+    );
+    callback(leads);
+  });
+};
+
+
 
 const extractMedia = async (data: any): Promise<any> => {
   let mediaId: string | null = null;

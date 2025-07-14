@@ -1,20 +1,20 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { format, parseISO, parse, isValid } from "date-fns";
 import { Lead } from "../../types";
 import { CustomKpi, CustomField } from "../../types/types";
 import {
-  Phone,
+  ChevronDown,
+  Check,
+  Edit,
   X,
   MessageSquare,
   MessagesSquare,
   MessageCircle,
   User,
   Award,
-  ChevronDown,
   Calendar,
   Tag,
-  Check,
-  Edit,
+  Snowflake,
 } from "lucide-react";
 import {
   updateLeadStatus,
@@ -27,6 +27,7 @@ import { CollapsibleQualifierSection } from "../../../src/components/collapsible
 import { updateLeadCustomField } from "../../services/api";
 import { useCustomerType } from "../../context/CustomerTypeContext";
 import { useNotification } from "../../context/NotificationContext";
+import { subscribeToLeads } from "../../services/firebase";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -94,6 +95,106 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
   const [scheduledLeads, setScheduledLeads] = useState<Record<string, boolean>>(
     {}
   );
+  const [updatingRemark, setUpdatingRemark] = useState<string | null>(null);
+  const [remarkUpdateModalOpen, setRemarkUpdateModalOpen] = useState(false);
+  const [selectedRemark, setSelectedRemark] = useState<string>("");
+  const [leadForRemarkUpdate, setLeadForRemarkUpdate] = useState<string | null>(
+    null
+  );
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const timerRefs = useRef<Record<string, NodeJS.Timeout>>({});
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(timerRefs.current).forEach(clearInterval);
+    };
+  }, []);
+
+  // Remarks options
+  const remarkOptions = [
+    "DNP/DNC",
+    "Interested",
+    "Not Interested",
+    "Qualifier Issue",
+    "Location Issue",
+    "Targeting Issue",
+    "Not Qualified",
+    "Fake/Spam",
+  ];
+
+  // Handle remark update
+  const handleRemarkSelection = (leadId: string, remark: string) => {
+    if (remark === "DNP/DNC" || remark === "Interested") {
+      // Open follow-up popup
+      setLeadForRemarkUpdate(leadId);
+      setSelectedRemark(remark);
+      setFollowUpLeadId(leadId);
+    } else {
+      // Open comment modal
+      setLeadForRemarkUpdate(leadId);
+      setSelectedRemark(remark);
+      setRemarkUpdateModalOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!viewingUserPhone) return;
+
+    const unsubscribe = subscribeToLeads(viewingUserPhone, (newLeads) => {
+      setLeads(newLeads);
+    });
+
+    return () => unsubscribe();
+  }, [viewingUserPhone]);
+
+
+
+  const handleRemarkUpdateSubmit = async (comment: string) => {
+    if (!leadForRemarkUpdate || !selectedRemark) return;
+
+    setUpdatingRemark(leadForRemarkUpdate);
+    setRemarkUpdateModalOpen(false);
+
+    try {
+      // Update remark field
+      await updateLeadCustomField(
+        leadForRemarkUpdate,
+        "remark",
+        selectedRemark,
+        viewingUserPhone
+      );
+      onUpdateCustomField(leadForRemarkUpdate, "remark", selectedRemark);
+
+      // Add comment if provided
+      if (comment.trim()) {
+        const newComment: CommentHistoryItem = {
+          user: viewingUserPhone,
+          displayName: viewingUserDisplayName,
+          content: `Remark updated to ${selectedRemark}: ${comment.trim()}`,
+          timestamp: new Date().toISOString(),
+        };
+
+        await appendCustomerComment(
+          leadForRemarkUpdate,
+          newComment,
+          viewingUserPhone
+        );
+      }
+    } catch (error) {
+      console.error("Error updating remark:", error);
+    } finally {
+      setUpdatingRemark(null);
+    }
+  };
 
   interface CommentHistoryItem {
     user: string;
@@ -106,28 +207,28 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     setOpenSectionKey((prev) => (prev === section ? null : section));
   };
 
-
   // Notification for new leads //
   useEffect(() => {
-  if (leads.length > 0) {
-    // Get the most recent lead
-    const recentLead = leads[0];
-    
-    // Check if this lead was created in the last 10 seconds
-    const leadDate = recentLead.created_time ? new Date(recentLead.created_time) : new Date();
-    const now = new Date();
-    const diffSeconds = (now.getTime() - leadDate.getTime()) / 1000;
-    
-    if (diffSeconds < 10) {
-      addNotification({
-        type: 'lead',
-        title: 'New Lead Added',
-        message: `${recentLead.name || 'A new lead'} has been added to your dashboard`,
-        link: `/dashboard`
-      });
+    if (leads.length > 0) {
+      const recentLead = leads[0];
+      const leadDate = recentLead.created_time
+        ? new Date(recentLead.created_time)
+        : new Date();
+      const now = new Date();
+      const diffSeconds = (now.getTime() - leadDate.getTime()) / 1000;
+
+      if (diffSeconds < 10) {
+        addNotification({
+          type: "lead",
+          title: "New Lead Added",
+          message: `${
+            recentLead.name || "A new lead"
+          } has been added to your dashboard`,
+          link: `/dashboard`,
+        });
+      }
     }
-  }
-}, [leads, addNotification]);
+  }, [leads, addNotification]);
 
   const handleSaveCustomField = async (
     leadId: string,
@@ -421,6 +522,19 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
 
       setScheduledLeads((prev) => ({ ...prev, [leadId]: true }));
       setFollowUpLeadId(null);
+
+      // Update remark if it was set via remark selection
+      if (leadForRemarkUpdate && selectedRemark) {
+        await updateLeadCustomField(
+          leadForRemarkUpdate,
+          "remark",
+          selectedRemark,
+          viewingUserPhone
+        );
+        onUpdateCustomField(leadForRemarkUpdate, "remark", selectedRemark);
+        setLeadForRemarkUpdate(null);
+        setSelectedRemark("");
+      }
     } catch (error) {
       console.error("Error scheduling follow-up:", error);
     }
@@ -787,17 +901,17 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     </div>
   );
 
-  interface StatusUpdateModalProps {
+  interface CommentModalProps {
     isOpen: boolean;
     onClose: () => void;
-    selectedStatus: string;
+    title: string;
     onSubmit: (comment: string) => void;
   }
 
-  const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
+  const CommentModal: React.FC<CommentModalProps> = ({
     isOpen,
     onClose,
-    selectedStatus,
+    title,
     onSubmit,
   }) => {
     const [comment, setComment] = useState("");
@@ -821,9 +935,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
           </button>
 
           <div className="flex justify-center mb-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Update Status to {selectedStatus}
-            </h3>
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
           </div>
 
           <div className="mb-4">
@@ -838,7 +950,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               className="mt-1 block w-full rounded-md border border-input bg-background shadow-sm focus:border-primary focus:ring-primary sm:text-sm min-h-[100px] resize-y"
-              placeholder="Enter comment for stage update..."
+              placeholder="Enter comment..."
               autoFocus
             />
           </div>
@@ -847,7 +959,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
             onClick={handleSubmit}
             className="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors duration-200"
           >
-            Update Status
+            Submit
           </button>
         </div>
       </div>
@@ -877,6 +989,150 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     }
   }
 
+  // Timer component for new leads
+  const LeadTimer = ({ createdTime }: { createdTime?: string }) => {
+    const [remainingSeconds, setRemainingSeconds] = useState<number | null>(
+      null
+    );
+    const [elapsedMinutes, setElapsedMinutes] = useState<number | null>(null);
+    const [progress, setProgress] = useState(1);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+      if (!createdTime) {
+        setRemainingSeconds(null);
+        setElapsedMinutes(null);
+        return;
+      }
+
+      const leadDate = parseLeadDate(createdTime);
+      if (!leadDate) {
+        setRemainingSeconds(null);
+        setElapsedMinutes(null);
+        return;
+      }
+
+      const calculateTime = () => {
+        const now = new Date();
+        const diffInMs = now.getTime() - leadDate.getTime();
+        const diffInSeconds = Math.floor(diffInMs / 1000);
+        const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+
+        // Within first 2 minutes
+        if (diffInSeconds < 120) {
+          const remaining = 120 - diffInSeconds;
+          setRemainingSeconds(remaining);
+          setProgress(remaining / 120);
+          setElapsedMinutes(null);
+        }
+        // Between 2 minutes and 1 hour
+        else if (diffInMinutes < 60) {
+          setRemainingSeconds(null);
+          setElapsedMinutes(diffInMinutes);
+        }
+        // Over 1 hour
+        else {
+          setRemainingSeconds(null);
+          setElapsedMinutes(null);
+        }
+      };
+
+      // Initial calculation
+      calculateTime();
+
+      // Set up interval if within first 2 minutes
+      if (remainingSeconds !== null && remainingSeconds > 0) {
+        timerRef.current = setInterval(calculateTime, 1000);
+      }
+
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
+    }, [createdTime]);
+
+    // Clear interval when component unmounts
+    useEffect(() => {
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
+    }, []);
+
+    if (!createdTime)
+      return <div className="text-xs text-muted-foreground">N/A</div>;
+
+    const leadDate = parseLeadDate(createdTime);
+    if (!leadDate)
+      return <div className="text-xs text-muted-foreground">N/A</div>;
+
+    const diffInMs = new Date().getTime() - leadDate.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const circumference = 2 * Math.PI * 9; // Radius of 9
+
+    // Within first 2 minutes - show animated circular timer
+    if (remainingSeconds !== null && remainingSeconds > 0) {
+      const minutes = Math.floor(remainingSeconds / 60);
+      return (
+        <div className="relative w-5 h-5">
+          <svg className="w-full h-full" viewBox="0 0 20 20">
+            <circle
+              cx="10"
+              cy="10"
+              r="9"
+              fill="none"
+              stroke="#e6e6e6"
+              strokeWidth="1.5"
+            />
+            <circle
+              cx="10"
+              cy="10"
+              r="9"
+              fill="none"
+              stroke="#10B981"
+              strokeWidth="1.5"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference * (1 - progress)}
+              strokeLinecap="round"
+              transform="rotate(-90 10 10)"
+              className="transition-all duration-1000 ease-linear"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[6px] font-bold text-green-600">
+              {minutes}
+            </span>
+          </div>
+        </div>
+      );
+    }
+    // Between 2 minutes and 1 hour - show elapsed minutes
+    else if (
+      elapsedMinutes !== null ||
+      (diffInMinutes >= 2 && diffInMinutes < 60)
+    ) {
+      return (
+        <div className="text-xs text-warning font-medium">
+          🕒{elapsedMinutes !== null ? elapsedMinutes : diffInMinutes}min
+        </div>
+      );
+    }
+    // Over 1 hour - show lead cold
+    else if (diffInHours >= 1) {
+      return (
+        <div className="flex items-center gap-1 text-xs text-blue-400 font-medium">
+          <Snowflake size={12} />
+          <span>Cold</span>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -903,11 +1159,20 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
 
   return (
     <div className="bg-card rounded-lg shadow overflow-hidden relative">
-      <StatusUpdateModal
+      {/* Status Update Modal */}
+      <CommentModal
         isOpen={statusUpdateModalOpen}
         onClose={() => setStatusUpdateModalOpen(false)}
-        selectedStatus={selectedStatus}
+        title={`Update Status to ${selectedStatus}`}
         onSubmit={handleStatusUpdateSubmit}
+      />
+
+      {/* Remark Update Modal */}
+      <CommentModal
+        isOpen={remarkUpdateModalOpen}
+        onClose={() => setRemarkUpdateModalOpen(false)}
+        title={`Update Remark to ${selectedRemark}`}
+        onSubmit={handleRemarkUpdateSubmit}
       />
 
       <div className="p-4 sm:p-6 border-b border-border">
@@ -1017,12 +1282,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                       scope="col"
                       className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hover:bg-accent/20 transition-colors"
                     >
-                      Contact
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hover:bg-accent/20 transition-colors"
-                    >
                       Location
                     </th>
                     <th
@@ -1042,7 +1301,13 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                       scope="col"
                       className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hover:bg-accent/20 transition-colors"
                     >
-                      Status
+                      Remarks
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hover:bg-accent/20 transition-colors"
+                    >
+                      STAGES
                     </th>
                     <th
                       scope="col"
@@ -1130,17 +1395,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                               {lead.name || "N/A"}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <Phone
-                                  size={16}
-                                  className="text-muted-foreground mr-2"
-                                />
-                                <div className="text-sm text-muted-foreground truncate max-w-[120px]">
-                                  {lead.whatsapp_number_ || "N/A"}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
                               <div className="text-sm text-muted-foreground truncate max-w-[140px]">
                                 {extractLocation(lead.comments || "")}
                               </div>
@@ -1148,6 +1402,45 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                             <td className="px-4 py-3 whitespace-nowrap">
                               <div className={`text-sm ${scoreColor}`}>
                                 {score ?? "N/A"}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 relative">
+                                  <select
+                                    value={(lead as any).remark || ""}
+                                    onChange={(e) =>
+                                      handleRemarkSelection(
+                                        lead.id!,
+                                        e.target.value
+                                      )
+                                    }
+                                    disabled={updatingRemark === lead.id}
+                                    className={`w-full px-2 py-1 text-xs rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-primary ${
+                                      updatingRemark === lead.id
+                                        ? "opacity-70 cursor-not-allowed"
+                                        : ""
+                                    }`}
+                                  >
+                                    <option value="">Select Remark</option>
+                                    {remarkOptions.map((option) => (
+                                      <option key={option} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {updatingRemark === lead.id && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-accent/50 rounded">
+                                      <SyncLoader
+                                        size={5}
+                                        color="hsl(var(--primary))"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-shrink-0">
+                                  <LeadTimer createdTime={lead.created_time} />
+                                </div>
                               </div>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap relative">
@@ -1211,14 +1504,20 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                               {followUpLeadId === lead.id && (
                                 <div
                                   className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-                                  onClick={() => setFollowUpLeadId(null)}
+                                  onClick={() => {
+                                    setFollowUpLeadId(null);
+                                    setLeadForRemarkUpdate(null);
+                                  }}
                                 >
                                   <div
                                     className="bg-card border border-border rounded-md p-6 shadow-lg w-80 relative animate-fadeIn"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <button
-                                      onClick={() => setFollowUpLeadId(null)}
+                                      onClick={() => {
+                                        setFollowUpLeadId(null);
+                                        setLeadForRemarkUpdate(null);
+                                      }}
                                       className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
                                       aria-label="Close"
                                     >
@@ -1327,10 +1626,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                         )}
                       </h1>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
-                        <span className="flex items-center truncate">
-                          <Phone size={12} className="mr-1" />
-                          {selectedLead.whatsapp_number_ || "N/A"}
-                        </span>
                         <span className="flex items-center">
                           <Calendar size={12} className="mr-1" />
                           {selectedLead.created_time

@@ -32,6 +32,7 @@ import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
 
+
 const getInitials = (name: string) => {
   if (!name) return "?";
   const names = name.split(" ");
@@ -222,8 +223,8 @@ const InteractiveRenderer = memo(({ interactive }: { interactive: any }) => {
   if (interactive.action?.buttons) {
     return (
       <div className="mt-2">
-        <div className="text-sm font-medium mb-1">{interactive.body?.text}</div>
-        <div className="flex flex-wrap gap-2">
+        {/* <div className="text-sm font-medium mb-1">{interactive.body?.text}</div> */}
+        {/* <div className="flex flex-wrap gap-2">
           {interactive.action.buttons.map((button: any, index: number) => (
             <button
               key={index}
@@ -233,7 +234,7 @@ const InteractiveRenderer = memo(({ interactive }: { interactive: any }) => {
               {button.text}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -535,9 +536,32 @@ export default function Chats() {
     );
   }, [sortedChats, searchQuery]);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+  // const scrollToBottom = useCallback(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, []);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+const lastMessageIdRef = useRef<string | null>(null);
+const hasScrolledInitially = useRef(false);
+
+const scrollToBottom = useCallback(() => {
+  const container = chatContainerRef.current;
+  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+}, []);
+
+const isUserAtBottom = () => {
+  const container = chatContainerRef.current;
+  if (!container) return true;
+  return (
+    container.scrollHeight - container.scrollTop - container.clientHeight < 50
+  );
+};
+
+
+
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -657,25 +681,27 @@ export default function Chats() {
   //   }
   // }, [messages, scrollToBottom]);
 
-  const lastMessageIdRef = useRef<string | null>(null);
-
   useEffect(() => {
-    if (messages.length === 0) return;
+  if (messages.length === 0) return;
 
-    const lastMessage = messages[messages.length - 1];
+  const lastMessage = messages[messages.length - 1];
 
-    // Only scroll if the last message is new
-    if (lastMessage.id !== lastMessageIdRef.current) {
-      lastMessageIdRef.current = lastMessage.id;
+  // Scroll to bottom on first load
+  if (!hasScrolledInitially.current) {
+    scrollToBottom();
+    lastMessageIdRef.current = lastMessage.id;
+    hasScrolledInitially.current = true;
+    return;
+  }
+
+  // Scroll to bottom only if user is already at the bottom
+  if (lastMessage.id !== lastMessageIdRef.current) {
+    lastMessageIdRef.current = lastMessage.id;
+    if (isUserAtBottom()) {
       scrollToBottom();
     }
-  }, [messages, scrollToBottom]);
-
-  useEffect(() => {
-    setSelected(null);
-    setMessages([]);
-    setChats([]);
-  }, [accountId]);
+  }
+}, [messages, scrollToBottom]);
 
   const getPhoneNumberId = async (accountId: string): Promise<string> => {
     const accountDoc = await getDoc(doc(db, `accounts/${accountId}`));
@@ -1226,33 +1252,38 @@ export default function Chats() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
-              {loadingMessages ? (
-                <div className="flex justify-center items-center h-full">
-                  <Spinner className="h-8 w-8 text-blue-500" />
-                </div>
-              ) : (
-                <>
-                  {Object.keys(groupedMessages).length > 0 ? (
-                    Object.entries(groupedMessages).map(([date, msgs]) => (
-                      <div key={date}>
-                        <div className="flex justify-center my-4">
-                          <div className="px-2.5 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
-                            {date}
+              <div
+                ref={chatContainerRef} 
+                className="flex-1 overflow-y-auto p-3 bg-gray-50"
+              >
+                {loadingMessages ? (
+                  <div className="flex justify-center items-center h-full">
+                    <Spinner className="h-8 w-8 text-blue-500" />
+                  </div>
+                ) : (
+                  <>
+                    {Object.keys(groupedMessages).length > 0 ? (
+                      Object.entries(groupedMessages).map(([date, msgs]) => (
+                        <div key={date}>
+                          <div className="flex justify-center my-4">
+                            <div className="px-2.5 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
+                              {date}
+                            </div>
                           </div>
+                          {msgs.map((m) => (
+                            <MessageItem key={m.id} message={m} />
+                          ))}
                         </div>
-                        {msgs.map((m) => (
-                          <MessageItem key={m.id} message={m} />
-                        ))}
+                      ))
+                    ) : (
+                      <div className="flex justify-center items-center h-full text-gray-500 text-sm">
+                        No messages yet. Start the conversation!
                       </div>
-                    ))
-                  ) : (
-                    <div className="flex justify-center items-center h-full text-gray-500 text-sm">
-                      No messages yet. Start the conversation!
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </>
-              )}
+                    )}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="p-2.5 border-t bg-white sticky bottom-0 z-20">

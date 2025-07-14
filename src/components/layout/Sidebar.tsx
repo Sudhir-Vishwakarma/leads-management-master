@@ -18,9 +18,9 @@ import {
   Award,
   Globe,
   ShoppingCart,
-  Database as DatabaseIcon,
-  ShoppingBag,
-  DollarSign,
+  // Database as DatabaseIcon,
+  // ShoppingBag,
+  // DollarSign,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
@@ -268,16 +268,16 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
           </NavLink>
 
           {/* Database */}
-          <NavLink to="/dashboard/database" className={({ isActive }) => getNavLinkClass(isActive)}>
+          {/* <NavLink to="/dashboard/database" className={({ isActive }) => getNavLinkClass(isActive)}>
             <DatabaseIcon className="mr-3 h-5 w-5" />
             Database
-          </NavLink>
+          </NavLink> */}
 
           {/* Order */}
-          <NavLink to="/dashboard/orders" className={({ isActive }) => getNavLinkClass(isActive)}>
+          {/* <NavLink to="/dashboard/orders" className={({ isActive }) => getNavLinkClass(isActive)}>
             <ShoppingBag className="mr-3 h-5 w-5" />
             Order
-          </NavLink>
+          </NavLink> */}
         </nav>
 
         {/* Footer */}
@@ -288,10 +288,10 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
           </NavLink>
 
           {/* Save & Earn */}
-          <NavLink to="/dashboard/saveandearn" className={({ isActive }) => getNavLinkClass(isActive)}>
+          {/* <NavLink to="/dashboard/saveandearn" className={({ isActive }) => getNavLinkClass(isActive)}>
             <DollarSign className="mr-3 h-5 w-5 text-green-600" />
             Save & Earn
-          </NavLink>
+          </NavLink> */}
 
           <div className="mt-4 text-sm text-muted-foreground">Beta Version 1.0.0</div>
           <div className="text-xs text-muted-foreground mt-1">(There might be few issues, kindly ignore.)</div>

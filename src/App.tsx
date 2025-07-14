@@ -186,8 +186,10 @@ import { CustomerTypeProvider } from "./context/CustomerTypeContext";
 import { MeetProvider } from "./context/MeetContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { useWABASync } from "./services/Hooks/useLeadSync";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-
+// Replace this with your actual client ID
+const GOOGLE_CLIENT_ID = "655518493333-pi8nosro0gd9jsn8c2lbdj20689eipcg.apps.googleusercontent.com";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading, onboardingComplete } = useAuth();
@@ -203,12 +205,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Redirect to onboarding if not completed
   if (!onboardingComplete && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Redirect to dashboard if onboarding is complete
   if (onboardingComplete && location.pathname === '/onboarding') {
     return <Navigate to="/dashboard" replace />;
   }
@@ -217,92 +217,94 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  return (
-    <AuthProvider>
-      <NotificationProvider>
-        <CustomerTypeProvider>
-          <MeetProvider>
-            <MeetingNotificationMonitor />
-            <Router>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/onboarding" element={
-                  <ProtectedRoute>
-                    <Onboarding />
-                  </ProtectedRoute>
-                } />
-
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <DashboardLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="analytics" element={<Analytics />} />
-                  <Route path="chats" element={<Chats />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="taskmeet" element={<Meet />} />
-                  <Route path="shopnow" element={<ShopNow />} />
-                  <Route path="database" element={<Database />} />
-                  <Route path="orders" element={<Orders />} />
-                  <Route path="saveandearn" element={<SaveAndEarn />} />
-                  <Route path="campaigns">
-                    <Route path="meta" element={<Meta />} />
-                    <Route path="google" element={<Google />} />
-                    <Route path="whatsapp" element={<WhatsApp />} />
-                  </Route>
-                  <Route path="customers">
-                    <Route path="basic" element={<Basic />} />
-                    <Route path="advance" element={<Advance />} />
-                    <Route path="pro" element={<Pro />} />
-                  </Route>
-
-                  <Route path="myservices">
-                    <Route path="sgoogle" element={<ServicesGoogle />} />
-                    <Route path="smeta" element={<ServicesMeta />} />
-                    <Route path="swhatsapp" element={<ServicesWhatsApp />} />
-                    <Route path="sweb" element={<Web />} />
-                    <Route path="sapp" element={<ServicesApp />} />
-                  </Route>
-                </Route>
-                <Route
-                  path="notifications"
-                  element={
-                    <ProtectedRoute>
-                      <NotificationPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/"
-                  element={<Navigate to="/dashboard" replace />}
-                />
-              </Routes>
-            </Router>
-
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="colored"
-            />
-          </MeetProvider>
-        </CustomerTypeProvider>
-      </NotificationProvider>
-    </AuthProvider>
-  );
   useWABASync();
 
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <NotificationProvider>
+          <CustomerTypeProvider>
+            <MeetProvider>
+              <MeetingNotificationMonitor />
+              <Router>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute>
+                      <Onboarding />
+                    </ProtectedRoute>
+                  } />
+
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <DashboardLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Dashboard />} />
+                    <Route path="analytics" element={<Analytics />} />
+                    <Route path="chats" element={<Chats />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="taskmeet" element={<Meet />} />
+                    <Route path="shopnow" element={<ShopNow />} />
+                    <Route path="database" element={<Database />} />
+                    <Route path="orders" element={<Orders />} />
+                    <Route path="saveandearn" element={<SaveAndEarn />} />
+                    <Route path="campaigns">
+                      <Route path="meta" element={<Meta />} />
+                      <Route path="google" element={<Google />} />
+                      <Route path="whatsapp" element={<WhatsApp />} />
+                    </Route>
+                    <Route path="customers">
+                      <Route path="basic" element={<Basic />} />
+                      <Route path="advance" element={<Advance />} />
+                      <Route path="pro" element={<Pro />} />
+                    </Route>
+
+                    <Route path="myservices">
+                      <Route path="sgoogle" element={<ServicesGoogle />} />
+                      <Route path="smeta" element={<ServicesMeta />} />
+                      <Route path="swhatsapp" element={<ServicesWhatsApp />} />
+                      <Route path="sweb" element={<Web />} />
+                      <Route path="sapp" element={<ServicesApp />} />
+                    </Route>
+                  </Route>
+                  <Route
+                    path="notifications"
+                    element={
+                      <ProtectedRoute>
+                        <NotificationPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/"
+                    element={<Navigate to="/dashboard" replace />}
+                  />
+                </Routes>
+              </Router>
+
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored"
+              />
+            </MeetProvider>
+          </CustomerTypeProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
+  );
 }
 
 export default App;

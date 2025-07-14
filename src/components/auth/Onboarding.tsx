@@ -1,20 +1,20 @@
 // import React, { useState, useEffect } from 'react';
 // import { doc, setDoc } from 'firebase/firestore';
 // import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
-// import app, { firestore } from '../../config/firebase'; 
+// import app, { firestore } from '../../config/firebase';
 // import { useNavigate } from 'react-router-dom';
-// import { 
-//   ArrowRight, 
-//   ArrowLeft, 
-//   Building, 
-//   MapPin, 
-//   User, 
-//   Upload, 
+// import {
+//   ArrowRight,
+//   ArrowLeft,
+//   Building,
+//   MapPin,
+//   User,
+//   Upload,
 //   FileText,
 //   Check,
 //   X,
-//   Mail, 
-//   Share2, 
+//   Mail,
+//   Share2,
 //   MessageSquare
 // } from 'lucide-react';
 // import { useAuth } from '../../context/AuthContext';
@@ -211,13 +211,13 @@
 
 //   // Toggle selection for questions and keywords
 //   const toggleSelection = (
-//     item: string, 
+//     item: string,
 //     type: 'questions' | 'keywords'
 //   ) => {
-//     const selectedArray = type === 'questions' 
-//       ? leadsData.selectedQuestions 
+//     const selectedArray = type === 'questions'
+//       ? leadsData.selectedQuestions
 //       : leadsData.selectedKeywords;
-      
+
 //     const setSelected = type === 'questions'
 //       ? (items: string[]) => setLeadsData(prev => ({ ...prev, selectedQuestions: items }))
 //       : (items: string[]) => setLeadsData(prev => ({ ...prev, selectedKeywords: items }));
@@ -311,7 +311,7 @@
 //       const timestamp = Date.now();
 //       const fileExtension = file.name.split('.').pop();
 //       const uniqueFilename = `${timestamp}.${fileExtension}`;
-      
+
 //       const storageRef = ref(storage, `${path}/${uniqueFilename}`);
 //       await uploadBytes(storageRef, file);
 //       const url = await getDownloadURL(storageRef);
@@ -324,13 +324,13 @@
 //   const submitOnboarding = async () => {
 //     setLoading(true);
 //     setError('');
-    
+
 //     try {
 //       if (!currentUser?.phoneNumber) throw new Error('User not authenticated');
-      
+
 //       // Clean phone number by removing non-digit characters
 //       const cleanPhone = currentUser.phoneNumber.replace(/\D/g, '');
-      
+
 //       // Upload profile picture
 //       let profilePicUrl = '';
 //       if (userDetails.profilePic) {
@@ -342,7 +342,7 @@
 //       // Upload documents
 //       const udyamUrls = await uploadFiles(documents.udyam, `documents/${cleanPhone}/udyam`);
 //       const businessProofUrls = await uploadFiles(
-//         documents.businessProofs, 
+//         documents.businessProofs,
 //         `documents/${cleanPhone}/business_proofs`
 //       );
 
@@ -401,26 +401,26 @@
 //               Welcome to STARZ Ai CRM
 //             </h1>
 //             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-//               Get started with the most powerful CRM solution tailored for your business. 
+//               Get started with the most powerful CRM solution tailored for your business.
 //               Complete your onboarding to unlock all features.
 //             </p>
 //           </div>
 //         );
-      
+
 //       case 2:
 //         return (
 //           <div className="space-y-6">
 //             <p className="text-gray-600 mb-6">
 //               Choose the industry that best describes your business
 //             </p>
-            
+
 //             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 //               {Object.keys(industryData).map((ind) => (
 //                 <button
 //                   key={ind}
 //                   className={`p-4 rounded-lg border-2 text-left transition-all ${
-//                     industry === ind 
-//                       ? 'border-blue-600 bg-blue-50' 
+//                     industry === ind
+//                       ? 'border-blue-600 bg-blue-50'
 //                       : 'border-gray-200 hover:border-blue-300'
 //                   }`}
 //                   onClick={() => setIndustry(ind)}
@@ -431,19 +431,19 @@
 //             </div>
 //           </div>
 //         );
-      
+
 //       case 3:
 //         return (
 //           <div className="space-y-8">
 //             <p className="text-gray-600">
 //               Connect your business accounts to enable seamless integration and data synchronization
 //             </p>
-            
+
 //             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 //               {/* Google Connection */}
 //               <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-//                 connections.google 
-//                   ? 'border-green-500 bg-green-50' 
+//                 connections.google
+//                   ? 'border-green-500 bg-green-50'
 //                   : 'border-gray-200 hover:border-blue-300'
 //               }`}>
 //                 <div className="flex justify-center mb-4">
@@ -460,8 +460,8 @@
 //                 <button
 //                   type="button"
 //                   className={`px-4 py-2 rounded-lg ${
-//                     connections.google 
-//                       ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+//                     connections.google
+//                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
 //                       : 'bg-blue-600 text-white hover:bg-blue-700'
 //                   } transition`}
 //                   onClick={() => toggleConnection('google')}
@@ -469,11 +469,11 @@
 //                   {connections.google ? 'Connected ✓' : 'Connect Google'}
 //                 </button>
 //               </div>
-              
+
 //               {/* Meta Connection */}
 //               <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-//                 connections.meta 
-//                   ? 'border-blue-500 bg-blue-50' 
+//                 connections.meta
+//                   ? 'border-blue-500 bg-blue-50'
 //                   : 'border-gray-200 hover:border-blue-300'
 //               }`}>
 //                 <div className="flex justify-center mb-4">
@@ -490,8 +490,8 @@
 //                 <button
 //                   type="button"
 //                   className={`px-4 py-2 rounded-lg ${
-//                     connections.meta 
-//                       ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+//                     connections.meta
+//                       ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
 //                       : 'bg-blue-600 text-white hover:bg-blue-700'
 //                   } transition`}
 //                   onClick={() => toggleConnection('meta')}
@@ -499,11 +499,11 @@
 //                   {connections.meta ? 'Connected ✓' : 'Connect Meta'}
 //                 </button>
 //               </div>
-              
+
 //               {/* WhatsApp Connection */}
 //               <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-//                 connections.whatsapp 
-//                   ? 'border-green-500 bg-green-50' 
+//                 connections.whatsapp
+//                   ? 'border-green-500 bg-green-50'
 //                   : 'border-gray-200 hover:border-blue-300'
 //               }`}>
 //                 <div className="flex justify-center mb-4">
@@ -520,8 +520,8 @@
 //                 <button
 //                   type="button"
 //                   className={`px-4 py-2 rounded-lg ${
-//                     connections.whatsapp 
-//                       ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+//                     connections.whatsapp
+//                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
 //                       : 'bg-blue-600 text-white hover:bg-blue-700'
 //                   } transition`}
 //                   onClick={() => toggleConnection('whatsapp')}
@@ -530,7 +530,7 @@
 //                 </button>
 //               </div>
 //             </div>
-            
+
 //             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
 //               <p className="text-sm text-blue-700">
 //                 <span className="font-medium">Note:</span> You can skip this step and connect accounts later in settings.
@@ -538,22 +538,22 @@
 //             </div>
 //           </div>
 //         );
-      
+
 //       case 4:
 //         return (
 //           <div className="space-y-6">
 //             <p className="text-gray-600 mb-6">
 //               Provide your personal information
 //             </p>
-            
+
 //             <div className="space-y-6">
 //               {/* Profile Picture */}
 //               <div className="flex items-center space-x-6">
 //                 <div className="relative">
 //                   {userDetails.profilePic ? (
-//                     <img 
-//                       src={URL.createObjectURL(userDetails.profilePic)} 
-//                       alt="Profile" 
+//                     <img
+//                       src={URL.createObjectURL(userDetails.profilePic)}
+//                       alt="Profile"
 //                       className="w-20 h-20 rounded-full object-cover"
 //                     />
 //                   ) : (
@@ -563,8 +563,8 @@
 //                   )}
 //                   <label className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1 cursor-pointer">
 //                     <Upload size={16} />
-//                     <input 
-//                       type="file" 
+//                     <input
+//                       type="file"
 //                       className="hidden"
 //                       accept="image/*"
 //                       onChange={(e) => {
@@ -583,7 +583,7 @@
 //                   <p className="text-sm text-gray-500">JPG, PNG (max 5MB)</p>
 //                 </div>
 //               </div>
-              
+
 //               {/* Basic Info */}
 //               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 //                 <div>
@@ -596,10 +596,10 @@
 //                     onChange={(e) => setUserDetails(prev => ({ ...prev, fullName: e.target.value }))}
 //                     placeholder="Your full name"
 //                     className="block w-full rounded-lg border px-4 py-3"
-                    
+
 //                   />
 //                 </div>
-                
+
 //                 <div>
 //                   <label className="block text-sm font-medium mb-1">
 //                     Phone
@@ -611,10 +611,10 @@
 //                     className="block w-full rounded-lg border px-4 py-3 bg-gray-100"
 //                   />
 //                 </div>
-                
+
 //                 <div>
 //                   <label className="block text-sm font-medium mb-1">
-//                     Email 
+//                     Email
 //                   </label>
 //                   <input
 //                     type="email"
@@ -622,10 +622,10 @@
 //                     onChange={(e) => setUserDetails(prev => ({ ...prev, email: e.target.value }))}
 //                     placeholder="Your email address"
 //                     className="block w-full rounded-lg border px-4 py-3"
-                    
+
 //                   />
 //                 </div>
-                
+
 //                 <div>
 //                   <label className="block text-sm font-medium mb-1">
 //                     Date of Birth
@@ -637,7 +637,7 @@
 //                     className="block w-full rounded-lg border px-4 py-3"
 //                   />
 //                 </div>
-                
+
 //                 <div>
 //                   <label className="block text-sm font-medium mb-1">
 //                     Gender (optional)
@@ -655,7 +655,7 @@
 //                   </select>
 //                 </div>
 //               </div>
-              
+
 //               {/* Address */}
 //               <div className="border-t pt-6 mt-6">
 //                 <h3 className="text-lg font-medium text-gray-800 mb-4">Address Information</h3>
@@ -672,7 +672,7 @@
 //                       className="block w-full rounded-lg border px-4 py-3"
 //                     />
 //                   </div>
-                  
+
 //                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 //                     <div>
 //                       <label className="block text-sm font-medium mb-1">
@@ -686,7 +686,7 @@
 //                         className="block w-full rounded-lg border px-4 py-3"
 //                       />
 //                     </div>
-                    
+
 //                     <div>
 //                       <label className="block text-sm font-medium mb-1">
 //                         State
@@ -699,7 +699,7 @@
 //                         className="block w-full rounded-lg border px-4 py-3"
 //                       />
 //                     </div>
-                    
+
 //                     <div>
 //                       <label className="block text-sm font-medium mb-1">
 //                         ZIP Code
@@ -713,7 +713,7 @@
 //                       />
 //                     </div>
 //                   </div>
-                  
+
 //                   <div>
 //                     <label className="block text-sm font-medium mb-1">
 //                       Country
@@ -731,21 +731,21 @@
 //             </div>
 //           </div>
 //         );
-      
+
 //       case 5:
 //         return (
 //           <div className="space-y-6">
 //             <p className="text-gray-600 mb-6">
 //               Please upload required documents for verification
 //             </p>
-            
+
 //             {/* Udyam Certificate */}
 //             <div className="space-y-4">
 //               <div className="font-medium text-gray-800 flex items-center">
 //                 Udyam Certificate *
 //                 <span className="text-xs text-gray-500 ml-2">(PDF only)</span>
 //               </div>
-              
+
 //               <label className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
 //                 <div className="flex flex-col items-center justify-center">
 //                   <Upload size={24} className="text-gray-400 mb-2" />
@@ -754,15 +754,15 @@
 //                   </p>
 //                   <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB each)</p>
 //                 </div>
-//                 <input 
-//                   type="file" 
+//                 <input
+//                   type="file"
 //                   className="hidden"
 //                   accept="application/pdf"
 //                   multiple
 //                   onChange={(e) => handleFileUpload(e, 'udyam')}
 //                 />
 //               </label>
-              
+
 //               {/* Uploaded files */}
 //               {documents.udyam.length > 0 && (
 //                 <div className="mt-4 space-y-2">
@@ -775,7 +775,7 @@
 //                           {(file.size / 1024 / 1024).toFixed(2)}MB
 //                         </span>
 //                       </div>
-//                       <button 
+//                       <button
 //                         type="button"
 //                         className="text-red-500 hover:text-red-700"
 //                         onClick={() => removeFile(index, 'udyam')}
@@ -787,14 +787,14 @@
 //                 </div>
 //               )}
 //             </div>
-            
+
 //             {/* Business Proofs */}
 //             <div className="space-y-4 pt-6">
 //               <div className="font-medium text-gray-800 flex items-center">
 //                 Business Proofs
 //                 <span className="text-xs text-gray-500 ml-2">(PDF only)</span>
 //               </div>
-              
+
 //               <label className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
 //                 <div className="flex flex-col items-center justify-center">
 //                   <Upload size={24} className="text-gray-400 mb-2" />
@@ -803,15 +803,15 @@
 //                   </p>
 //                   <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB each)</p>
 //                 </div>
-//                 <input 
-//                   type="file" 
+//                 <input
+//                   type="file"
 //                   className="hidden"
 //                   accept="application/pdf"
 //                   multiple
 //                   onChange={(e) => handleFileUpload(e, 'businessProofs')}
 //                 />
 //               </label>
-              
+
 //               {/* Uploaded files */}
 //               {documents.businessProofs.length > 0 && (
 //                 <div className="mt-4 space-y-2">
@@ -824,7 +824,7 @@
 //                           {(file.size / 1024 / 1024).toFixed(2)}MB
 //                         </span>
 //                       </div>
-//                       <button 
+//                       <button
 //                         type="button"
 //                         className="text-red-500 hover:text-red-700"
 //                         onClick={() => removeFile(index, 'businessProofs')}
@@ -838,16 +838,16 @@
 //             </div>
 //           </div>
 //         );
-      
+
 //       case 6:
 //         const currentIndustryData = industryData[industry as keyof typeof industryData];
-        
+
 //         return (
 //           <div className="space-y-8">
 //             <p className="text-gray-600 mb-6">
 //               Configure your lead qualification settings for {industry} industry
 //             </p>
-            
+
 //             {/* Industry Questions */}
 //             <div>
 //               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -863,14 +863,14 @@
 //                         ? 'border-blue-600 bg-blue-50'
 //                         : 'border-gray-200 hover:border-blue-300'
 //                     } ${
-//                       leadsData.selectedQuestions.length >= 3 && 
+//                       leadsData.selectedQuestions.length >= 3 &&
 //                       !leadsData.selectedQuestions.includes(question)
 //                         ? 'opacity-50 cursor-not-allowed'
 //                         : 'cursor-pointer'
 //                     }`}
 //                     onClick={() => toggleSelection(question, 'questions')}
 //                     disabled={
-//                       leadsData.selectedQuestions.length >= 3 && 
+//                       leadsData.selectedQuestions.length >= 3 &&
 //                       !leadsData.selectedQuestions.includes(question)
 //                     }
 //                   >
@@ -889,7 +889,7 @@
 //                 Selected: {leadsData.selectedQuestions.length}/3
 //               </p>
 //             </div>
-            
+
 //             {/* Location */}
 //             <div className="pt-6">
 //               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -908,7 +908,7 @@
 //                 />
 //               </div>
 //             </div>
-            
+
 //             {/* Keywords */}
 //             <div className="pt-6">
 //               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -924,14 +924,14 @@
 //                         ? 'border-blue-600 bg-blue-50 text-blue-700'
 //                         : 'border-gray-200 text-gray-700 hover:border-blue-300'
 //                     } ${
-//                       leadsData.selectedKeywords.length >= 3 && 
+//                       leadsData.selectedKeywords.length >= 3 &&
 //                       !leadsData.selectedKeywords.includes(keyword)
 //                         ? 'opacity-50 cursor-not-allowed'
 //                         : 'cursor-pointer'
 //                     }`}
 //                     onClick={() => toggleSelection(keyword, 'keywords')}
 //                     disabled={
-//                       leadsData.selectedKeywords.length >= 3 && 
+//                       leadsData.selectedKeywords.length >= 3 &&
 //                       !leadsData.selectedKeywords.includes(keyword)
 //                     }
 //                   >
@@ -943,7 +943,7 @@
 //                 Selected: {leadsData.selectedKeywords.length}/3
 //               </p>
 //             </div>
-            
+
 //             {/* USP */}
 //             <div className="pt-6">
 //               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -962,7 +962,7 @@
 //             </div>
 //           </div>
 //         );
-      
+
 //       default:
 //         return null;
 //     }
@@ -973,27 +973,27 @@
 //       <div className="max-w-4xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
 //         {/* Progress Bar */}
 //         <div className="h-2 bg-gray-200">
-//           <div 
+//           <div
 //             className="h-full bg-blue-600 transition-all duration-500 ease-in-out"
 //             style={{ width: `${progress}%` }}
 //           ></div>
 //         </div>
-        
+
 //         <div className="p-8">
 //           {/* Step Header */}
 //           <div className="mb-6">
 //             <p className="text-sm text-gray-500">Step {step} of 6</p>
 //             <h2 className="text-xl font-bold text-gray-800">{stepTitles[step-1]}</h2>
 //           </div>
-          
+
 //           {/* Step Content */}
 //           <div className="mb-8">
 //             {renderStep()}
 //           </div>
-          
+
 //           {/* Error Message */}
 //           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-          
+
 //           {/* Navigation Buttons */}
 //           <div className="flex justify-between items-center">
 //             <div>
@@ -1009,7 +1009,7 @@
 //                 </button>
 //               )}
 //             </div>
-            
+
 //             <div className="flex items-center space-x-3">
 //               {step >= 2 && step <= 6 && (
 //                 <button
@@ -1021,7 +1021,7 @@
 //                   Skip
 //                 </button>
 //               )}
-              
+
 //               <button
 //                 type="button"
 //                 onClick={handleNext}
@@ -1047,13 +1047,6 @@
 
 // export default Onboarding;
 
-
-
-
-
-
-
-
 // Extend the Window interface to include fbAsyncInit for Facebook SDK
 declare global {
   interface Window {
@@ -1063,27 +1056,28 @@ declare global {
   }
 }
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
-import app, { firestore } from '../../config/firebase'; 
-import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  ArrowLeft, 
-  Building, 
-  MapPin, 
-  User, 
-  Upload, 
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { doc, setDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
+import app, { firestore } from "../../config/firebase";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Building,
+  MapPin,
+  User,
+  Upload,
   FileText,
   Check,
   X,
   Loader2,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+} from "lucide-react";
 import { FaGoogle, FaFacebook, FaWhatsapp } from "react-icons/fa";
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from "../../context/AuthContext";
+import { useGoogleLogin } from "@react-oauth/google";
 
 // Industry-specific questions and keywords
 const industryData = {
@@ -1098,12 +1092,20 @@ const industryData = {
       "Are you looking for individual or family coverage?",
       "What's your annual income range?",
       "Do you own any high-value assets?",
-      "What's your risk tolerance level?"
+      "What's your risk tolerance level?",
     ],
     keywords: [
-      "Term Life", "Health Coverage", "Auto Insurance", "Homeowners", "Liability",
-      "Premium", "Deductible", "Claim Process", "Renewal", "Risk Assessment"
-    ]
+      "Term Life",
+      "Health Coverage",
+      "Auto Insurance",
+      "Homeowners",
+      "Liability",
+      "Premium",
+      "Deductible",
+      "Claim Process",
+      "Renewal",
+      "Risk Assessment",
+    ],
   },
   Loan: {
     questions: [
@@ -1116,12 +1118,20 @@ const industryData = {
       "What's the purpose of the loan?",
       "What loan term are you looking for?",
       "Do you have collateral to offer?",
-      "Have you declared bankruptcy in the last 7 years?"
+      "Have you declared bankruptcy in the last 7 years?",
     ],
     keywords: [
-      "Personal Loan", "Mortgage", "Business Loan", "Interest Rate", "EMI",
-      "Credit Score", "Collateral", "Pre-approval", "Refinance", "Debt Consolidation"
-    ]
+      "Personal Loan",
+      "Mortgage",
+      "Business Loan",
+      "Interest Rate",
+      "EMI",
+      "Credit Score",
+      "Collateral",
+      "Pre-approval",
+      "Refinance",
+      "Debt Consolidation",
+    ],
   },
   "Real Estate": {
     questions: [
@@ -1134,12 +1144,20 @@ const industryData = {
       "Are you working with another agent?",
       "What's your preferred property size?",
       "Do you have any specific amenities requirements?",
-      "Are you interested in investment properties?"
+      "Are you interested in investment properties?",
     ],
     keywords: [
-      "Residential", "Commercial", "Lease", "Brokerage", "Property Management",
-      "Appraisal", "Closing", "Down Payment", "Listing", "Market Analysis"
-    ]
+      "Residential",
+      "Commercial",
+      "Lease",
+      "Brokerage",
+      "Property Management",
+      "Appraisal",
+      "Closing",
+      "Down Payment",
+      "Listing",
+      "Market Analysis",
+    ],
   },
   Education: {
     questions: [
@@ -1152,12 +1170,20 @@ const industryData = {
       "Do you have any prior qualifications?",
       "What are your career goals?",
       "Do you require accommodation services?",
-      "Are you interested in international programs?"
+      "Are you interested in international programs?",
     ],
     keywords: [
-      "Online Courses", "Certification", "Vocational Training", "Higher Education", "Scholarships",
-      "Admissions", "Curriculum", "Faculty", "Accreditation", "Placement"
-    ]
+      "Online Courses",
+      "Certification",
+      "Vocational Training",
+      "Higher Education",
+      "Scholarships",
+      "Admissions",
+      "Curriculum",
+      "Faculty",
+      "Accreditation",
+      "Placement",
+    ],
   },
   "HR Agency": {
     questions: [
@@ -1170,12 +1196,20 @@ const industryData = {
       "Do you require background check services?",
       "What's your budget per hire?",
       "Do you need payroll management services?",
-      "What ATS systems do you use?"
+      "What ATS systems do you use?",
     ],
     keywords: [
-      "Recruitment", "Talent Acquisition", "Executive Search", "Onboarding", "Payroll",
-      "Compliance", "Training", "Performance Management", "Contract Staffing", "HR Consulting"
-    ]
+      "Recruitment",
+      "Talent Acquisition",
+      "Executive Search",
+      "Onboarding",
+      "Payroll",
+      "Compliance",
+      "Training",
+      "Performance Management",
+      "Contract Staffing",
+      "HR Consulting",
+    ],
   },
   Others: {
     questions: [
@@ -1188,13 +1222,21 @@ const industryData = {
       "Do you have any specific requirements for leads?",
       "What's your preferred method of contact?",
       "What industries do you primarily serve?",
-      "What's your company size?"
+      "What's your company size?",
     ],
     keywords: [
-      "Custom Solution", "General Business", "B2B", "B2C", "Consulting",
-      "Partnership", "Innovation", "Growth", "Diversified", "Flexible"
-    ]
-  }
+      "Custom Solution",
+      "General Business",
+      "B2B",
+      "B2C",
+      "Consulting",
+      "Partnership",
+      "Innovation",
+      "Growth",
+      "Diversified",
+      "Flexible",
+    ],
+  },
 };
 
 // Step titles for header
@@ -1204,13 +1246,13 @@ const stepTitles = [
   "Connect Your Accounts",
   "Personal Details",
   "Upload Documents",
-  "Leads Qualifier"
+  "Leads Qualifier",
 ];
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [progress, setProgress] = useState(16);
   const { currentUser, refreshOnboardingStatus } = useAuth();
   const navigate = useNavigate();
@@ -1219,42 +1261,44 @@ const Onboarding = () => {
   const storage = getStorage(app);
 
   // Form state
-  const [industry, setIndustry] = useState('');
+  const [industry, setIndustry] = useState("");
   const [userDetails, setUserDetails] = useState({
     profilePic: null as File | null,
-    fullName: '',
-    userName: '',
-    phone: currentUser?.phoneNumber || '',
-    phoneWithoutWhatsApp: '',
-    email: '',
-    dateOfBirth: '',
-    gender: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: ''
+    fullName: "",
+    userName: "",
+    phone: currentUser?.phoneNumber || "",
+    phoneWithoutWhatsApp: "",
+    email: "",
+    dateOfBirth: "",
+    gender: "",
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
   });
   const [documents, setDocuments] = useState({
     udyam: [] as File[],
-    businessProofs: [] as File[]
+    businessProofs: [] as File[],
   });
   const [leadsData, setLeadsData] = useState({
     selectedQuestions: [] as string[],
-    location: '',
+    location: "",
     selectedKeywords: [] as string[],
-    usp: ''
+    usp: "",
   });
   const [connections, setConnections] = useState({
     google: false,
     meta: false,
-    whatsapp: false
+    whatsapp: false,
   });
 
   // Google connection states
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleStatusMessage, setGoogleStatusMessage] = useState('');
-  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
+  const [googleStatusMessage, setGoogleStatusMessage] = useState("");
+  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(
+    null
+  );
 
   // WhatsApp Business Account details
   const [whatsappBusinessAccount, setWhatsappBusinessAccount] = useState<{
@@ -1329,8 +1373,8 @@ const Onboarding = () => {
       }
 
       // Create script element
-      const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/platform.js';
+      const script = document.createElement("script");
+      script.src = "https://apis.google.com/js/platform.js";
       script.async = true;
       script.defer = true;
       script.onload = () => {
@@ -1341,13 +1385,13 @@ const Onboarding = () => {
           } else if (retries > 0) {
             setTimeout(() => checkGapi(retries - 1, delay), delay);
           } else {
-            reject(new Error('Google API failed to load'));
+            reject(new Error("Google API failed to load"));
           }
         };
         checkGapi();
       };
       script.onerror = () => {
-        reject(new Error('Failed to load Google API'));
+        reject(new Error("Failed to load Google API"));
       };
       document.body.appendChild(script);
     });
@@ -1358,91 +1402,74 @@ const Onboarding = () => {
   // Add WhatsApp message listener
   useEffect(() => {
     const handleWhatsAppMessage = (event: MessageEvent) => {
-      if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") {
+      if (
+        event.origin !== "https://www.facebook.com" &&
+        event.origin !== "https://web.facebook.com"
+      ) {
         return;
       }
-      
+
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'WA_EMBEDDED_SIGNUP') {
-          if (data.event === 'FINISH') {
+        if (data.type === "WA_EMBEDDED_SIGNUP") {
+          if (data.event === "FINISH") {
             const { phone_number_id, waba_id } = data.data;
-            setWhatsappBusinessAccount({ phoneNumberId: phone_number_id, wabaId: waba_id });
-            setConnections(prev => ({ ...prev, whatsapp: true }));
+            setWhatsappBusinessAccount({
+              phoneNumberId: phone_number_id,
+              wabaId: waba_id,
+            });
+            setConnections((prev) => ({ ...prev, whatsapp: true }));
             setWhatsappStatus("success");
-            setWhatsappStatusMessage("WhatsApp business account connected successfully");
-          } else if (data.event === 'CANCEL') {
+            setWhatsappStatusMessage(
+              "WhatsApp business account connected successfully"
+            );
+          } else if (data.event === "CANCEL") {
             const { current_step } = data.data;
             setWhatsappStatus("cancelled");
             setWhatsappStatusMessage(`Cancelled at step ${current_step}`);
-          } else if (data.event === 'ERROR') {
+          } else if (data.event === "ERROR") {
             const { error_message } = data.data;
             setWhatsappStatus("error");
             setWhatsappStatusMessage(error_message || "Unknown error occurred");
           }
         }
       } catch {
-        console.log('Non JSON Responses', event.data);
+        console.log("Non JSON Responses", event.data);
       }
     };
 
-    window.addEventListener('message', handleWhatsAppMessage);
-    return () => window.removeEventListener('message', handleWhatsAppMessage);
+    window.addEventListener("message", handleWhatsAppMessage);
+    return () => window.removeEventListener("message", handleWhatsAppMessage);
   }, []);
 
   // Handle Google Sign-In
-  const handleGoogleConnect = async () => {
-    setGoogleLoading(true);
-    setGoogleStatusMessage("Connecting to Google...");
-    
-    try {
-      // Ensure Google API is loaded
-      await ensureGoogleApiLoaded();
+  const handleGoogleConnect = useGoogleLogin({
+    scope: "https://www.googleapis.com/auth/business.manage",
+    onSuccess: (tokenResponse) => {
+      const accessToken = tokenResponse.access_token;
 
-      // Load the auth2 module
-      await new Promise<void>((resolve, reject) => {
-        if (!window.gapi.load) {
-          reject(new Error('gapi.load is not available'));
-          return;
-        }
-
-        window.gapi.load('auth2', {
-          callback: resolve,
-          onerror: reject
-        });
-      });
-
-      // Initialize Google Auth
-      await window.gapi.auth2.init({
-        client_id: `655518493333-pi8nosro0gd9jsn8c2lbdj20689eipcg.apps.googleusercontent.com`,
-        scope: 'https://www.googleapis.com/auth/business.manage',
-      });
-
-      // Sign in
-      const authInstance = window.gapi.auth2.getAuthInstance();
-      const googleUser = await authInstance.signIn();
-      
-      // Get access token
-      const accessToken = googleUser.getAuthResponse().access_token;
-      
-      // Store token and update state
+      // Save access token and update UI
       setGoogleAccessToken(accessToken);
-      setConnections(prev => ({ ...prev, google: true }));
+      setConnections((prev) => ({ ...prev, google: true }));
       setGoogleStatusMessage("Google connected successfully!");
-    } catch (error) {
-      console.error('Google sign-in error', error);
+    },
+    onError: (errorResponse) => {
+      console.error("Google sign-in error", errorResponse);
       setGoogleStatusMessage("Google connection failed or canceled");
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
+    },
+  });
 
   // Get Google status icon
   const getGoogleStatusIcon = () => {
     if (googleLoading) {
       return <Loader2 className="w-5 h-5 animate-spin" />;
     }
-    return <FaGoogle size={32} className={connections.google ? 'text-green-600' : 'text-gray-500'} />;
+    return (
+      <FaGoogle
+        size={32}
+        className={connections.google ? "text-green-600" : "text-gray-500"}
+      />
+    );
   };
 
   // Handle Meta login
@@ -1452,59 +1479,62 @@ const Onboarding = () => {
 
     window.FB.login(
       (response: {
-      authResponse?: {
-        accessToken: string;
-        expiresIn: number;
-        signedRequest: string;
-        userID: string;
-        grantedScopes?: string;
-      };
-      status?: string;
+        authResponse?: {
+          accessToken: string;
+          expiresIn: number;
+          signedRequest: string;
+          userID: string;
+          grantedScopes?: string;
+        };
+        status?: string;
       }) => {
-      if (response.authResponse) {
-        setMetaLoginStatus("success");
-        setMetaStatusMessage("Connected to Meta!");
-        setConnections(prev => ({ ...prev, meta: true }));
-        
-        // Get user info
-        interface FBUserPictureData {
-        url?: string;
-        }
+        if (response.authResponse) {
+          setMetaLoginStatus("success");
+          setMetaStatusMessage("Connected to Meta!");
+          setConnections((prev) => ({ ...prev, meta: true }));
 
-        interface FBUserPicture {
-        data?: FBUserPictureData;
-        }
-
-        interface FBUserResponse {
-        name?: string;
-        email?: string;
-        picture?: FBUserPicture;
-        error?: any;
-        }
-
-        window.FB.api(
-        '/me',
-        { fields: 'name,email,picture' },
-        (userResponse: FBUserResponse) => {
-          if (userResponse && !userResponse.error) {
-          setUserDetails(prev => ({
-            ...prev,
-            fullName: userResponse.name || prev.fullName,
-            email: userResponse.email || prev.email,
-            ...(userResponse.picture?.data?.url && { profilePicUrl: userResponse.picture.data.url })
-          }));
+          // Get user info
+          interface FBUserPictureData {
+            url?: string;
           }
+
+          interface FBUserPicture {
+            data?: FBUserPictureData;
+          }
+
+          interface FBUserResponse {
+            name?: string;
+            email?: string;
+            picture?: FBUserPicture;
+            error?: any;
+          }
+
+          window.FB.api(
+            "/me",
+            { fields: "name,email,picture" },
+            (userResponse: FBUserResponse) => {
+              if (userResponse && !userResponse.error) {
+                setUserDetails((prev) => ({
+                  ...prev,
+                  fullName: userResponse.name || prev.fullName,
+                  email: userResponse.email || prev.email,
+                  ...(userResponse.picture?.data?.url && {
+                    profilePicUrl: userResponse.picture.data.url,
+                  }),
+                }));
+              }
+            }
+          );
+        } else {
+          setMetaLoginStatus("error");
+          setMetaStatusMessage("Meta connection failed or canceled");
+          setConnections((prev) => ({ ...prev, meta: false }));
         }
-        );
-      } else {
-        setMetaLoginStatus("error");
-        setMetaStatusMessage("Meta connection failed or canceled");
-        setConnections(prev => ({ ...prev, meta: false }));
-      }
       },
       {
-      scope: "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
-      return_scopes: true
+        scope:
+          "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
+        return_scopes: true,
       }
     );
   }, []);
@@ -1512,7 +1542,7 @@ const Onboarding = () => {
   // Launch WhatsApp Embedded Signup
   const launchWhatsAppSignup = useCallback(() => {
     if (!metaSdkReady) {
-      setError('Facebook SDK is not ready yet');
+      setError("Facebook SDK is not ready yet");
       return;
     }
 
@@ -1521,11 +1551,11 @@ const Onboarding = () => {
 
     interface FBLoginResponse {
       authResponse?: {
-      accessToken: string;
-      expiresIn: number;
-      signedRequest: string;
-      userID: string;
-      grantedScopes?: string;
+        accessToken: string;
+        expiresIn: number;
+        signedRequest: string;
+        userID: string;
+        grantedScopes?: string;
       };
       status?: string;
     }
@@ -1546,21 +1576,21 @@ const Onboarding = () => {
 
     window.FB.login(
       (response: FBLoginResponse) => {
-      if (!response.authResponse) {
-        setWhatsappStatus("error");
-        setWhatsappStatusMessage('User cancelled the login');
-      }
+        if (!response.authResponse) {
+          setWhatsappStatus("error");
+          setWhatsappStatusMessage("User cancelled the login");
+        }
       },
       {
-      config_id: '643657128126546',
-      response_type: 'code',
-      scope: 'business_management,whatsapp_business_management',
-      override_default_response_type: true,
-      extras: {
-        setup: { payment_method: true },
-        featureType: 'embedded_signup',
-        sessionInfoVersion: '2',
-      }
+        config_id: "643657128126546",
+        response_type: "code",
+        scope: "business_management,whatsapp_business_management",
+        override_default_response_type: true,
+        extras: {
+          setup: { payment_method: true },
+          featureType: "embedded_signup",
+          sessionInfoVersion: "2",
+        },
       } as FBLoginOptions
     );
   }, [metaSdkReady]);
@@ -1576,7 +1606,14 @@ const Onboarding = () => {
       case "cancelled":
         return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
-        return <FaWhatsapp size={32} className={connections.whatsapp ? 'text-green-600' : 'text-gray-500'} />;
+        return (
+          <FaWhatsapp
+            size={32}
+            className={
+              connections.whatsapp ? "text-green-600" : "text-gray-500"
+            }
+          />
+        );
     }
   };
 
@@ -1586,39 +1623,43 @@ const Onboarding = () => {
   }, [step]);
 
   // Handle file uploads
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'udyam' | 'businessProofs') => {
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "udyam" | "businessProofs"
+  ) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      setDocuments(prev => ({
+      setDocuments((prev) => ({
         ...prev,
-        [type]: [...prev[type], ...files]
+        [type]: [...prev[type], ...files],
       }));
     }
   };
 
   // Remove uploaded file
-  const removeFile = (index: number, type: 'udyam' | 'businessProofs') => {
-    setDocuments(prev => ({
+  const removeFile = (index: number, type: "udyam" | "businessProofs") => {
+    setDocuments((prev) => ({
       ...prev,
-      [type]: prev[type].filter((_, i) => i !== index)
+      [type]: prev[type].filter((_, i) => i !== index),
     }));
   };
 
   // Toggle selection for questions and keywords
-  const toggleSelection = (
-    item: string, 
-    type: 'questions' | 'keywords'
-  ) => {
-    const selectedArray = type === 'questions' 
-      ? leadsData.selectedQuestions 
-      : leadsData.selectedKeywords;
-      
-    const setSelected = type === 'questions'
-      ? (items: string[]) => setLeadsData(prev => ({ ...prev, selectedQuestions: items }))
-      : (items: string[]) => setLeadsData(prev => ({ ...prev, selectedKeywords: items }));
+  const toggleSelection = (item: string, type: "questions" | "keywords") => {
+    const selectedArray =
+      type === "questions"
+        ? leadsData.selectedQuestions
+        : leadsData.selectedKeywords;
+
+    const setSelected =
+      type === "questions"
+        ? (items: string[]) =>
+            setLeadsData((prev) => ({ ...prev, selectedQuestions: items }))
+        : (items: string[]) =>
+            setLeadsData((prev) => ({ ...prev, selectedKeywords: items }));
 
     if (selectedArray.includes(item)) {
-      setSelected(selectedArray.filter(i => i !== item));
+      setSelected(selectedArray.filter((i) => i !== item));
     } else {
       if (selectedArray.length < 3) {
         setSelected([...selectedArray, item]);
@@ -1633,21 +1674,25 @@ const Onboarding = () => {
         return true;
       case 2:
         if (!industry) {
-          setError('Please select an industry');
+          setError("Please select an industry");
           return false;
         }
         return true;
       case 3:
         return true;
       case 4:
-        if (!userDetails.fullName || !userDetails.userName || !userDetails.email) {
-          setError('Full Name, Username, and Email are required');
+        if (
+          !userDetails.fullName ||
+          !userDetails.userName ||
+          !userDetails.email
+        ) {
+          setError("Full Name, Username, and Email are required");
           return false;
         }
         return true;
       case 5:
         if (documents.udyam.length === 0) {
-          setError('Udyam certificate is required');
+          setError("Udyam certificate is required");
           return false;
         }
         return true;
@@ -1661,7 +1706,7 @@ const Onboarding = () => {
   // Handle next step
   const handleNext = () => {
     if (validateStep()) {
-      setError('');
+      setError("");
       if (step < 6) {
         setStep(step + 1);
       } else {
@@ -1672,7 +1717,7 @@ const Onboarding = () => {
 
   // Handle skip step
   const handleSkip = () => {
-    setError('');
+    setError("");
     if (step < 6) {
       setStep(step + 1);
     } else {
@@ -1682,7 +1727,7 @@ const Onboarding = () => {
 
   // Handle previous step
   const handleBack = () => {
-    setError('');
+    setError("");
     if (step > 1) {
       setStep(step - 1);
     }
@@ -1693,9 +1738,9 @@ const Onboarding = () => {
     const urls = [];
     for (const file of files) {
       const timestamp = Date.now();
-      const fileExtension = file.name.split('.').pop();
+      const fileExtension = file.name.split(".").pop();
       const uniqueFilename = `${timestamp}.${fileExtension}`;
-      
+
       const storageRef = ref(storage, `${path}/${uniqueFilename}`);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
@@ -1707,25 +1752,31 @@ const Onboarding = () => {
   // Final submission
   const submitOnboarding = async () => {
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
-      if (!currentUser?.phoneNumber) throw new Error('User not authenticated');
-      
-      const cleanPhone = currentUser.phoneNumber.replace(/\D/g, '');
-      
+      if (!currentUser?.phoneNumber) throw new Error("User not authenticated");
+
+      const cleanPhone = currentUser.phoneNumber.replace(/\D/g, "");
+
       // Upload profile picture
-      let profilePicUrl = '';
+      let profilePicUrl = "";
       if (userDetails.profilePic) {
-        const storageRef = ref(storage, `profile_pics/${cleanPhone}/${Date.now()}`);
+        const storageRef = ref(
+          storage,
+          `profile_pics/${cleanPhone}/${Date.now()}`
+        );
         await uploadBytes(storageRef, userDetails.profilePic);
         profilePicUrl = await getDownloadURL(storageRef);
       }
 
       // Upload documents
-      const udyamUrls = await uploadFiles(documents.udyam, `documents/${cleanPhone}/udyam`);
+      const udyamUrls = await uploadFiles(
+        documents.udyam,
+        `documents/${cleanPhone}/udyam`
+      );
       const businessProofUrls = await uploadFiles(
-        documents.businessProofs, 
+        documents.businessProofs,
         `documents/${cleanPhone}/business_proofs`
       );
 
@@ -1736,35 +1787,42 @@ const Onboarding = () => {
           ...connections,
           whatsapp: {
             connected: connections.whatsapp,
-            ...whatsappBusinessAccount
-          }
+            ...whatsappBusinessAccount,
+          },
         },
         userDetails: {
           ...userDetails,
-          profilePic: profilePicUrl
+          profilePic: profilePicUrl,
         },
         documents: {
           udyam: udyamUrls,
-          businessProofs: businessProofUrls
+          businessProofs: businessProofUrls,
         },
         leadsData: {
           ...leadsData,
-          industryQuestions: industryData[industry as keyof typeof industryData]?.questions || [],
-          industryKeywords: industryData[industry as keyof typeof industryData]?.keywords || []
+          industryQuestions:
+            industryData[industry as keyof typeof industryData]?.questions ||
+            [],
+          industryKeywords:
+            industryData[industry as keyof typeof industryData]?.keywords || [],
         },
         completed: true,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
 
       // Save to Firestore
-      const userRef = doc(firestore, 'crm_users', cleanPhone);
+      const userRef = doc(firestore, "crm_users", cleanPhone);
       const onboardingRef = doc(userRef, "Onboarding", "onboardingData");
-      
+
       // Store Google access token in main user document
       if (googleAccessToken) {
-        await setDoc(userRef, { google_access_token: googleAccessToken }, { merge: true });
+        await setDoc(
+          userRef,
+          { google_access_token: googleAccessToken },
+          { merge: true }
+        );
       }
-      
+
       await setDoc(onboardingRef, userData);
 
       // Refresh onboarding status
@@ -1772,10 +1830,14 @@ const Onboarding = () => {
         await refreshOnboardingStatus();
       }
 
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Onboarding error:', err);
-      setError(`Failed to complete onboarding: ${(err as Error).message || 'Please try again.'}`);
+      console.error("Onboarding error:", err);
+      setError(
+        `Failed to complete onboarding: ${
+          (err as Error).message || "Please try again."
+        }`
+      );
     } finally {
       setLoading(false);
     }
@@ -1796,27 +1858,27 @@ const Onboarding = () => {
               Welcome to STARZ Ai CRM
             </h1>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Get started with the most powerful CRM solution tailored for your business. 
-              Complete your onboarding to unlock all features.
+              Get started with the most powerful CRM solution tailored for your
+              business. Complete your onboarding to unlock all features.
             </p>
           </div>
         );
-      
+
       case 2:
         return (
           <div className="space-y-6">
             <p className="text-gray-600 mb-6">
               Choose the industry that best describes your business
             </p>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Object.keys(industryData).map((ind) => (
                 <button
                   key={ind}
                   className={`p-4 rounded-lg border-2 text-left transition-all ${
-                    industry === ind 
-                      ? 'border-blue-600 bg-blue-50' 
-                      : 'border-gray-200 hover:border-blue-300'
+                    industry === ind
+                      ? "border-blue-600 bg-blue-50"
+                      : "border-gray-200 hover:border-blue-300"
                   }`}
                   onClick={() => setIndustry(ind)}
                 >
@@ -1826,70 +1888,85 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      
+
       case 3:
         return (
           <div className="space-y-8">
             <p className="text-gray-600">
-              Connect your business accounts to enable seamless integration and data synchronization
+              Connect your business accounts to enable seamless integration and
+              data synchronization
             </p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Google Connection */}
-              <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-                connections.google 
-                  ? 'border-green-500 bg-green-50' 
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}>
+              <div
+                className={`border-2 rounded-xl p-6 text-center transition-all ${
+                  connections.google
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+              >
                 <div className="flex justify-center mb-4">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                    connections.google ? 'bg-green-100' : 'bg-gray-100'
-                  }`}>
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                      connections.google ? "bg-green-100" : "bg-gray-100"
+                    }`}
+                  >
                     {getGoogleStatusIcon()}
                   </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">Google Account</h3>
+                <h3 className="text-lg font-medium text-gray-800 mb-2">
+                  Google Account
+                </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Google account for email, calendar, and contacts
                 </p>
                 {googleLoading ? (
                   <div className="text-center py-2">
-                    <p className="text-sm text-gray-600">{googleStatusMessage}</p>
+                    <p className="text-sm text-gray-600">
+                      {googleStatusMessage}
+                    </p>
                   </div>
                 ) : (
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-lg ${
-                      connections.google 
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      connections.google
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
                     } transition`}
-                    onClick={handleGoogleConnect}
+                    onClick={() => handleGoogleConnect()}
                     disabled={googleLoading}
                   >
-                    {connections.google ? 'Connected ✓' : 'Connect Google'}
+                    {connections.google ? "Connected ✓" : "Connect Google"}
                   </button>
                 )}
               </div>
-              
+
               {/* Meta Connection */}
-              <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-                connections.meta 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}>
+              <div
+                className={`border-2 rounded-xl p-6 text-center transition-all ${
+                  connections.meta
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+              >
                 <div className="flex justify-center mb-4">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                    connections.meta ? 'bg-blue-100' : 'bg-gray-100'
-                  }`}>
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                      connections.meta ? "bg-blue-100" : "bg-gray-100"
+                    }`}
+                  >
                     <FaFacebook size={32} className="text-gray-500" />
                   </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">Facebook Account</h3>
+                <h3 className="text-lg font-medium text-gray-800 mb-2">
+                  Facebook Account
+                </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Facebook and Instagram business accounts
                 </p>
-                
+
                 {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
@@ -1898,86 +1975,96 @@ const Onboarding = () => {
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-lg ${
-                      connections.meta 
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      connections.meta
+                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
                     } transition`}
                     onClick={handleMetaLogin}
                     disabled={!metaSdkReady || metaLoginStatus === "processing"}
                   >
-                    {connections.meta ? 'Connected ✓' : 'Connect Meta'}
+                    {connections.meta ? "Connected ✓" : "Connect Meta"}
                   </button>
                 )}
               </div>
-              
+
               {/* WhatsApp Connection */}
-              <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-                connections.whatsapp 
-                  ? 'border-green-500 bg-green-50' 
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}>
+              <div
+                className={`border-2 rounded-xl p-6 text-center transition-all ${
+                  connections.whatsapp
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+              >
                 <div className="flex justify-center mb-4">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                    connections.whatsapp ? 'bg-green-100' : 'bg-gray-100'
-                  }`}>
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                      connections.whatsapp ? "bg-green-100" : "bg-gray-100"
+                    }`}
+                  >
                     {getWhatsAppStatusIcon()}
                   </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">WhatsApp Business</h3>
+                <h3 className="text-lg font-medium text-gray-800 mb-2">
+                  WhatsApp Business
+                </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your WhatsApp Business account for messaging
                 </p>
-                
+
                 {whatsappStatus === "processing" ? (
                   <div className="text-center py-2">
-                    <p className="text-sm text-gray-600">{whatsappStatusMessage}</p>
+                    <p className="text-sm text-gray-600">
+                      {whatsappStatusMessage}
+                    </p>
                   </div>
                 ) : (
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-lg ${
-                      connections.whatsapp 
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      connections.whatsapp
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
                     } transition`}
                     onClick={launchWhatsAppSignup}
                     disabled={whatsappStatus === "processing"}
                   >
-                    {connections.whatsapp ? 'Connected ✓' : 'Connect WhatsApp'}
+                    {connections.whatsapp ? "Connected ✓" : "Connect WhatsApp"}
                   </button>
                 )}
-                
-                {(whatsappStatus === "error" || whatsappStatus === "cancelled") && (
+
+                {(whatsappStatus === "error" ||
+                  whatsappStatus === "cancelled") && (
                   <p className="text-red-500 text-sm mt-2">
                     {whatsappStatusMessage}
                   </p>
                 )}
               </div>
             </div>
-            
+
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-700">
-                <span className="font-medium">Note:</span> You can skip this step and connect accounts later.
+                <span className="font-medium">Note:</span> You can skip this
+                step and connect accounts later.
               </p>
             </div>
           </div>
         );
-      
+
       case 4:
         return (
           <div className="space-y-6">
             <p className="text-gray-600 mb-6">
               Provide your personal information
             </p>
-            
+
             <div className="space-y-6">
               {/* Profile Picture */}
               <div className="flex items-center space-x-6">
                 <div className="relative">
                   {userDetails.profilePic ? (
-                    <img 
-                      src={URL.createObjectURL(userDetails.profilePic)} 
-                      alt="Profile" 
+                    <img
+                      src={URL.createObjectURL(userDetails.profilePic)}
+                      alt="Profile"
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (
@@ -1987,15 +2074,15 @@ const Onboarding = () => {
                   )}
                   <label className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1 cursor-pointer">
                     <Upload size={16} />
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       className="hidden"
                       accept="image/*"
                       onChange={(e) => {
                         if (e.target.files?.[0]) {
-                          setUserDetails(prev => ({
+                          setUserDetails((prev) => ({
                             ...prev,
-                            profilePic: e.target.files![0]
+                            profilePic: e.target.files![0],
                           }));
                         }
                       }}
@@ -2007,7 +2094,7 @@ const Onboarding = () => {
                   <p className="text-sm text-gray-500">JPG, PNG (max 5MB)</p>
                 </div>
               </div>
-              
+
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -2017,13 +2104,17 @@ const Onboarding = () => {
                   <input
                     type="text"
                     value={userDetails.fullName}
-                    onChange={(e) => setUserDetails(prev => ({ ...prev, fullName: e.target.value }))}
+                    onChange={(e) =>
+                      setUserDetails((prev) => ({
+                        ...prev,
+                        fullName: e.target.value,
+                      }))
+                    }
                     placeholder="Your full name"
                     className="block w-full rounded-lg border px-4 py-3"
-                    
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Phone
@@ -2035,21 +2126,25 @@ const Onboarding = () => {
                     className="block w-full rounded-lg border px-4 py-3 bg-gray-100"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Email 
+                    Email
                   </label>
                   <input
                     type="email"
                     value={userDetails.email}
-                    onChange={(e) => setUserDetails(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setUserDetails((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
                     placeholder="Your email address"
                     className="block w-full rounded-lg border px-4 py-3"
-                    
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Date of Birth
@@ -2057,18 +2152,28 @@ const Onboarding = () => {
                   <input
                     type="date"
                     value={userDetails.dateOfBirth}
-                    onChange={(e) => setUserDetails(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                    onChange={(e) =>
+                      setUserDetails((prev) => ({
+                        ...prev,
+                        dateOfBirth: e.target.value,
+                      }))
+                    }
                     className="block w-full rounded-lg border px-4 py-3"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Gender (optional)
                   </label>
                   <select
                     value={userDetails.gender}
-                    onChange={(e) => setUserDetails(prev => ({ ...prev, gender: e.target.value }))}
+                    onChange={(e) =>
+                      setUserDetails((prev) => ({
+                        ...prev,
+                        gender: e.target.value,
+                      }))
+                    }
                     className="block w-full rounded-lg border px-4 py-3 bg-white"
                   >
                     <option value="">Select Gender</option>
@@ -2079,10 +2184,12 @@ const Onboarding = () => {
                   </select>
                 </div>
               </div>
-              
+
               {/* Address */}
               <div className="border-t pt-6 mt-6">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Address Information</h3>
+                <h3 className="text-lg font-medium text-gray-800 mb-4">
+                  Address Information
+                </h3>
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -2091,12 +2198,17 @@ const Onboarding = () => {
                     <input
                       type="text"
                       value={userDetails.street}
-                      onChange={(e) => setUserDetails(prev => ({ ...prev, street: e.target.value }))}
+                      onChange={(e) =>
+                        setUserDetails((prev) => ({
+                          ...prev,
+                          street: e.target.value,
+                        }))
+                      }
                       placeholder="Your street address"
                       className="block w-full rounded-lg border px-4 py-3"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -2105,12 +2217,17 @@ const Onboarding = () => {
                       <input
                         type="text"
                         value={userDetails.city}
-                        onChange={(e) => setUserDetails(prev => ({ ...prev, city: e.target.value }))}
+                        onChange={(e) =>
+                          setUserDetails((prev) => ({
+                            ...prev,
+                            city: e.target.value,
+                          }))
+                        }
                         placeholder="City"
                         className="block w-full rounded-lg border px-4 py-3"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium mb-1">
                         State
@@ -2118,12 +2235,17 @@ const Onboarding = () => {
                       <input
                         type="text"
                         value={userDetails.state}
-                        onChange={(e) => setUserDetails(prev => ({ ...prev, state: e.target.value }))}
+                        onChange={(e) =>
+                          setUserDetails((prev) => ({
+                            ...prev,
+                            state: e.target.value,
+                          }))
+                        }
                         placeholder="State"
                         className="block w-full rounded-lg border px-4 py-3"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium mb-1">
                         ZIP Code
@@ -2131,13 +2253,18 @@ const Onboarding = () => {
                       <input
                         type="text"
                         value={userDetails.zip}
-                        onChange={(e) => setUserDetails(prev => ({ ...prev, zip: e.target.value }))}
+                        onChange={(e) =>
+                          setUserDetails((prev) => ({
+                            ...prev,
+                            zip: e.target.value,
+                          }))
+                        }
                         placeholder="ZIP"
                         className="block w-full rounded-lg border px-4 py-3"
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Country
@@ -2145,7 +2272,12 @@ const Onboarding = () => {
                     <input
                       type="text"
                       value={userDetails.country}
-                      onChange={(e) => setUserDetails(prev => ({ ...prev, country: e.target.value }))}
+                      onChange={(e) =>
+                        setUserDetails((prev) => ({
+                          ...prev,
+                          country: e.target.value,
+                        }))
+                      }
                       placeholder="Country"
                       className="block w-full rounded-lg border px-4 py-3"
                     />
@@ -2155,54 +2287,64 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      
+
       case 5:
         return (
           <div className="space-y-6">
             <p className="text-gray-600 mb-6">
               Please upload required documents for verification
             </p>
-            
+
             {/* Udyam Certificate */}
             <div className="space-y-4">
               <div className="font-medium text-gray-800 flex items-center">
                 Udyam Certificate *
                 <span className="text-xs text-gray-500 ml-2">(PDF only)</span>
               </div>
-              
+
               <label className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                 <div className="flex flex-col items-center justify-center">
                   <Upload size={24} className="text-gray-400 mb-2" />
                   <p className="text-sm text-gray-500">
-                    <span className="font-medium text-blue-600">Click to upload</span> or drag and drop
+                    <span className="font-medium text-blue-600">
+                      Click to upload
+                    </span>{" "}
+                    or drag and drop
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB each)</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF files only (max 10MB each)
+                  </p>
                 </div>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   className="hidden"
                   accept="application/pdf"
                   multiple
-                  onChange={(e) => handleFileUpload(e, 'udyam')}
+                  onChange={(e) => handleFileUpload(e, "udyam")}
                 />
               </label>
-              
+
               {/* Uploaded files */}
               {documents.udyam.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {documents.udyam.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center">
                         <FileText size={18} className="text-gray-500 mr-2" />
-                        <span className="text-sm truncate max-w-xs">{file.name}</span>
+                        <span className="text-sm truncate max-w-xs">
+                          {file.name}
+                        </span>
                         <span className="text-xs text-gray-500 ml-2">
                           {(file.size / 1024 / 1024).toFixed(2)}MB
                         </span>
                       </div>
-                      <button 
+                      <button
                         type="button"
                         className="text-red-500 hover:text-red-700"
-                        onClick={() => removeFile(index, 'udyam')}
+                        onClick={() => removeFile(index, "udyam")}
                       >
                         <X size={18} />
                       </button>
@@ -2211,47 +2353,57 @@ const Onboarding = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Business Proofs */}
             <div className="space-y-4 pt-6">
               <div className="font-medium text-gray-800 flex items-center">
                 Business Proofs
                 <span className="text-xs text-gray-500 ml-2">(PDF only)</span>
               </div>
-              
+
               <label className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                 <div className="flex flex-col items-center justify-center">
                   <Upload size={24} className="text-gray-400 mb-2" />
                   <p className="text-sm text-gray-500">
-                    <span className="font-medium text-blue-600">Click to upload</span> or drag and drop
+                    <span className="font-medium text-blue-600">
+                      Click to upload
+                    </span>{" "}
+                    or drag and drop
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB each)</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF files only (max 10MB each)
+                  </p>
                 </div>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   className="hidden"
                   accept="application/pdf"
                   multiple
-                  onChange={(e) => handleFileUpload(e, 'businessProofs')}
+                  onChange={(e) => handleFileUpload(e, "businessProofs")}
                 />
               </label>
-              
+
               {/* Uploaded files */}
               {documents.businessProofs.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {documents.businessProofs.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center">
                         <FileText size={18} className="text-gray-500 mr-2" />
-                        <span className="text-sm truncate max-w-xs">{file.name}</span>
+                        <span className="text-sm truncate max-w-xs">
+                          {file.name}
+                        </span>
                         <span className="text-xs text-gray-500 ml-2">
                           {(file.size / 1024 / 1024).toFixed(2)}MB
                         </span>
                       </div>
-                      <button 
+                      <button
                         type="button"
                         className="text-red-500 hover:text-red-700"
-                        onClick={() => removeFile(index, 'businessProofs')}
+                        onClick={() => removeFile(index, "businessProofs")}
                       >
                         <X size={18} />
                       </button>
@@ -2262,16 +2414,17 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      
+
       case 6:
-        const currentIndustryData = industryData[industry as keyof typeof industryData];
-        
+        const currentIndustryData =
+          industryData[industry as keyof typeof industryData];
+
         return (
           <div className="space-y-8">
             <p className="text-gray-600 mb-6">
               Configure your lead qualification settings for {industry} industry
             </p>
-            
+
             {/* Industry Questions */}
             <div>
               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -2284,23 +2437,26 @@ const Onboarding = () => {
                     type="button"
                     className={`p-4 rounded-lg border text-left transition-all ${
                       leadsData.selectedQuestions.includes(question)
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-200 hover:border-blue-300"
                     } ${
-                      leadsData.selectedQuestions.length >= 3 && 
+                      leadsData.selectedQuestions.length >= 3 &&
                       !leadsData.selectedQuestions.includes(question)
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'cursor-pointer'
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
                     }`}
-                    onClick={() => toggleSelection(question, 'questions')}
+                    onClick={() => toggleSelection(question, "questions")}
                     disabled={
-                      leadsData.selectedQuestions.length >= 3 && 
+                      leadsData.selectedQuestions.length >= 3 &&
                       !leadsData.selectedQuestions.includes(question)
                     }
                   >
                     <div className="flex items-start">
                       {leadsData.selectedQuestions.includes(question) ? (
-                        <Check className="text-blue-600 mt-0.5 mr-2 flex-shrink-0" size={18} />
+                        <Check
+                          className="text-blue-600 mt-0.5 mr-2 flex-shrink-0"
+                          size={18}
+                        />
                       ) : (
                         <div className="w-5 h-5 rounded-full border border-gray-300 mr-2 mt-0.5 flex-shrink-0" />
                       )}
@@ -2313,7 +2469,7 @@ const Onboarding = () => {
                 Selected: {leadsData.selectedQuestions.length}/3
               </p>
             </div>
-            
+
             {/* Location */}
             <div className="pt-6">
               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -2326,13 +2482,18 @@ const Onboarding = () => {
                 <input
                   type="text"
                   value={leadsData.location}
-                  onChange={(e) => setLeadsData(prev => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setLeadsData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                   placeholder="Enter target location (city, state, or region)"
                   className="pl-10 block w-full rounded-lg border px-4 py-3"
                 />
               </div>
             </div>
-            
+
             {/* Keywords */}
             <div className="pt-6">
               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -2345,17 +2506,17 @@ const Onboarding = () => {
                     type="button"
                     className={`px-4 py-2 rounded-full border transition-all ${
                       leadsData.selectedKeywords.includes(keyword)
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 text-gray-700 hover:border-blue-300'
+                        ? "border-blue-600 bg-blue-50 text-blue-700"
+                        : "border-gray-200 text-gray-700 hover:border-blue-300"
                     } ${
-                      leadsData.selectedKeywords.length >= 3 && 
+                      leadsData.selectedKeywords.length >= 3 &&
                       !leadsData.selectedKeywords.includes(keyword)
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'cursor-pointer'
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
                     }`}
-                    onClick={() => toggleSelection(keyword, 'keywords')}
+                    onClick={() => toggleSelection(keyword, "keywords")}
                     disabled={
-                      leadsData.selectedKeywords.length >= 3 && 
+                      leadsData.selectedKeywords.length >= 3 &&
                       !leadsData.selectedKeywords.includes(keyword)
                     }
                   >
@@ -2367,7 +2528,7 @@ const Onboarding = () => {
                 Selected: {leadsData.selectedKeywords.length}/3
               </p>
             </div>
-            
+
             {/* USP */}
             <div className="pt-6">
               <h3 className="text-lg font-medium text-gray-800 mb-4">
@@ -2375,7 +2536,9 @@ const Onboarding = () => {
               </h3>
               <textarea
                 value={leadsData.usp}
-                onChange={(e) => setLeadsData(prev => ({ ...prev, usp: e.target.value }))}
+                onChange={(e) =>
+                  setLeadsData((prev) => ({ ...prev, usp: e.target.value }))
+                }
                 placeholder="What makes your business unique? (Max 200 characters)"
                 className="block w-full rounded-lg border px-4 py-3 min-h-[120px]"
                 maxLength={200}
@@ -2386,7 +2549,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -2397,27 +2560,27 @@ const Onboarding = () => {
       <div className="max-w-4xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Progress Bar */}
         <div className="h-2 bg-gray-200">
-          <div 
+          <div
             className="h-full bg-blue-600 transition-all duration-500 ease-in-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        
+
         <div className="p-8">
           {/* Step Header */}
           <div className="mb-6">
             <p className="text-sm text-gray-500">Step {step} of 6</p>
-            <h2 className="text-xl font-bold text-gray-800">{stepTitles[step-1]}</h2>
+            <h2 className="text-xl font-bold text-gray-800">
+              {stepTitles[step - 1]}
+            </h2>
           </div>
-          
+
           {/* Step Content */}
-          <div className="mb-8">
-            {renderStep()}
-          </div>
-          
+          <div className="mb-8">{renderStep()}</div>
+
           {/* Error Message */}
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-          
+
           {/* Navigation Buttons */}
           <div className="flex justify-between items-center">
             <div>
@@ -2433,7 +2596,7 @@ const Onboarding = () => {
                 </button>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-3">
               {step >= 2 && step <= 6 && (
                 <button
@@ -2445,19 +2608,35 @@ const Onboarding = () => {
                   Skip
                 </button>
               )}
-              
+
               <button
                 type="button"
                 onClick={handleNext}
                 disabled={loading}
                 className="flex items-center px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {step === 6 ? 'Complete Setup' : 'Next Step'}
+                {step === 6 ? "Complete Setup" : "Next Step"}
                 {step < 6 && <ArrowRight size={18} className="ml-2" />}
                 {loading && (
-                  <svg className="animate-spin -mr-1 ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -mr-1 ml-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                 )}
               </button>
@@ -2470,5 +2649,3 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
-
-

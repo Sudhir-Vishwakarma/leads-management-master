@@ -1054,7 +1054,7 @@
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
 import app, { firestore } from '../../config/firebase'; 
@@ -1069,13 +1069,14 @@ import {
   FileText,
   Check,
   X,
-  Mail, 
+  // Mail, 
   Share2, 
-  MessageSquare,
+  // MessageSquare,
   Loader2,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import { FaGoogle, FaFacebook, FaWhatsapp } from "react-icons/fa";
 import { useAuth } from '../../context/AuthContext';
 
 // Industry-specific questions and keywords
@@ -1204,7 +1205,7 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [progress, setProgress] = useState(16); // 100/6 ≈ 16.66%
+  const [progress, setProgress] = useState(16);
   const { currentUser, refreshOnboardingStatus } = useAuth();
   const navigate = useNavigate();
 
@@ -1244,12 +1245,24 @@ const Onboarding = () => {
     whatsapp: false
   });
 
+  // WhatsApp Business Account details
+  const [whatsappBusinessAccount, setWhatsappBusinessAccount] = useState<{
+    phoneNumberId?: string;
+    wabaId?: string;
+  }>({});
+
   // Meta SDK states
   const [metaSdkReady, setMetaSdkReady] = useState(false);
   const [metaLoginStatus, setMetaLoginStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [metaStatusMessage, setMetaStatusMessage] = useState("");
+
+  // WhatsApp SDK states
+  const [whatsappStatus, setWhatsappStatus] = useState<
+    "idle" | "processing" | "success" | "error" | "cancelled"
+  >("idle");
+  const [whatsappStatusMessage, setWhatsappStatusMessage] = useState("");
 
   // Initialize Facebook SDK
   useEffect(() => {
@@ -1288,8 +1301,43 @@ const Onboarding = () => {
     initFacebookSdk();
   }, []);
 
+  // Add WhatsApp message listener
+  useEffect(() => {
+    const handleWhatsAppMessage = (event: MessageEvent) => {
+      if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") {
+        return;
+      }
+      
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          if (data.event === 'FINISH') {
+            const { phone_number_id, waba_id } = data.data;
+            setWhatsappBusinessAccount({ phoneNumberId: phone_number_id, wabaId: waba_id });
+            setConnections(prev => ({ ...prev, whatsapp: true }));
+            setWhatsappStatus("success");
+            setWhatsappStatusMessage("WhatsApp business account connected successfully");
+          } else if (data.event === 'CANCEL') {
+            const { current_step } = data.data;
+            setWhatsappStatus("cancelled");
+            setWhatsappStatusMessage(`Cancelled at step ${current_step}`);
+          } else if (data.event === 'ERROR') {
+            const { error_message } = data.data;
+            setWhatsappStatus("error");
+            setWhatsappStatusMessage(error_message || "Unknown error occurred");
+          }
+        }
+      } catch {
+        console.log('Non JSON Responses', event.data);
+      }
+    };
+
+    window.addEventListener('message', handleWhatsAppMessage);
+    return () => window.removeEventListener('message', handleWhatsAppMessage);
+  }, []);
+
   // Handle Meta login
-  const handleMetaLogin = () => {
+  const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
     setMetaStatusMessage("Connecting to Meta...");
 
@@ -1303,7 +1351,6 @@ const Onboarding = () => {
           // Get user info
           window.FB.api('/me', { fields: 'name,email,picture' }, (userResponse) => {
             if (userResponse && !userResponse.error) {
-              console.log('Meta user info:', userResponse);
               setUserDetails(prev => ({
                 ...prev,
                 fullName: userResponse.name || prev.fullName,
@@ -1323,7 +1370,38 @@ const Onboarding = () => {
         return_scopes: true
       }
     );
-  };
+  }, []);
+
+  // Launch WhatsApp Embedded Signup
+  const launchWhatsAppSignup = useCallback(() => {
+    if (!metaSdkReady) {
+      setError('Facebook SDK is not ready yet');
+      return;
+    }
+
+    setWhatsappStatus("processing");
+    setWhatsappStatusMessage("Launching WhatsApp signup...");
+
+    window.FB.login(
+      (response) => {
+        if (!response.authResponse) {
+          setWhatsappStatus("error");
+          setWhatsappStatusMessage('User cancelled the login');
+        }
+      },
+      {
+        config_id: '643657128126546',
+        response_type: 'code',
+        scope: 'business_management,whatsapp_business_management',
+        override_default_response_type: true,
+        extras: {
+          setup: { payment_method: true },
+          featureType: 'embedded_signup',
+          sessionInfoVersion: '2',
+        }
+      }
+    );
+  }, [metaSdkReady]);
 
   // Get Meta status icon
   const getMetaStatusIcon = () => {
@@ -1336,6 +1414,21 @@ const Onboarding = () => {
         return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
         return <Share2 size={32} className={connections.meta ? 'text-blue-600' : 'text-gray-500'} />;
+    }
+  };
+
+  // Get WhatsApp status icon
+  const getWhatsAppStatusIcon = () => {
+    switch (whatsappStatus) {
+      case "processing":
+        return <Loader2 className="w-5 h-5 animate-spin" />;
+      case "success":
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case "error":
+      case "cancelled":
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <FaWhatsapp size={32} className={connections.whatsapp ? 'text-green-600' : 'text-gray-500'} />;
     }
   };
 
@@ -1385,11 +1478,11 @@ const Onboarding = () => {
     }
   };
 
-  // Toggle connection status
-  const toggleConnection = (platform: 'google' | 'whatsapp') => {
+  // Toggle Google connection
+  const toggleGoogleConnection = () => {
     setConnections(prev => ({
       ...prev,
-      [platform]: !prev[platform]
+      google: !prev.google
     }));
   };
 
@@ -1397,7 +1490,7 @@ const Onboarding = () => {
   const validateStep = () => {
     switch (step) {
       case 1:
-        return true; // Welcome screen doesn't need validation
+        return true;
       case 2:
         if (!industry) {
           setError('Please select an industry');
@@ -1405,7 +1498,7 @@ const Onboarding = () => {
         }
         return true;
       case 3:
-        return true; // Connections are optional
+        return true;
       case 4:
         if (!userDetails.fullName || !userDetails.userName || !userDetails.email) {
           setError('Full Name, Username, and Email are required');
@@ -1419,7 +1512,6 @@ const Onboarding = () => {
         }
         return true;
       case 6:
-        // Leads qualifier is optional - no validation needed
         return true;
       default:
         return true;
@@ -1444,7 +1536,6 @@ const Onboarding = () => {
     if (step < 6) {
       setStep(step + 1);
     } else {
-      // For step 6, skip means submit without leads qualifier
       submitOnboarding();
     }
   };
@@ -1461,7 +1552,6 @@ const Onboarding = () => {
   const uploadFiles = async (files: File[], path: string) => {
     const urls = [];
     for (const file of files) {
-      // Generate unique filename with timestamp
       const timestamp = Date.now();
       const fileExtension = file.name.split('.').pop();
       const uniqueFilename = `${timestamp}.${fileExtension}`;
@@ -1482,7 +1572,6 @@ const Onboarding = () => {
     try {
       if (!currentUser?.phoneNumber) throw new Error('User not authenticated');
       
-      // Clean phone number by removing non-digit characters
       const cleanPhone = currentUser.phoneNumber.replace(/\D/g, '');
       
       // Upload profile picture
@@ -1503,7 +1592,13 @@ const Onboarding = () => {
       // Prepare user data
       const userData = {
         industry,
-        connections,
+        connections: {
+          ...connections,
+          whatsapp: {
+            connected: connections.whatsapp,
+            ...whatsappBusinessAccount
+          }
+        },
         userDetails: {
           ...userDetails,
           profilePic: profilePicUrl
@@ -1604,7 +1699,7 @@ const Onboarding = () => {
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
                     connections.google ? 'bg-green-100' : 'bg-gray-100'
                   }`}>
-                    <Mail size={32} className={connections.google ? 'text-green-600' : 'text-gray-500'} />
+                    <FaGoogle size={32} className={connections.google ? 'text-green-600' : 'text-gray-500'} />
                   </div>
                 </div>
                 <h3 className="text-lg font-medium text-gray-800 mb-2">Google Account</h3>
@@ -1618,7 +1713,7 @@ const Onboarding = () => {
                       ? 'bg-green-100 text-green-700 hover:bg-green-200' 
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   } transition`}
-                  onClick={() => toggleConnection('google')}
+                  onClick={toggleGoogleConnection}
                 >
                   {connections.google ? 'Connected ✓' : 'Connect Google'}
                 </button>
@@ -1634,10 +1729,10 @@ const Onboarding = () => {
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
                     connections.meta ? 'bg-blue-100' : 'bg-gray-100'
                   }`}>
-                    {getMetaStatusIcon()}
+                    <FaFacebook size={32} className="text-gray-500" />
                   </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">Meta Business</h3>
+                <h3 className="text-lg font-medium text-gray-800 mb-2">Facebook Account</h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Facebook and Instagram business accounts
                 </p>
@@ -1672,30 +1767,44 @@ const Onboarding = () => {
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
                     connections.whatsapp ? 'bg-green-100' : 'bg-gray-100'
                   }`}>
-                    <MessageSquare size={32} className={connections.whatsapp ? 'text-green-600' : 'text-gray-500'} />
+                    {getWhatsAppStatusIcon()}
                   </div>
                 </div>
                 <h3 className="text-lg font-medium text-gray-800 mb-2">WhatsApp Business</h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your WhatsApp Business account for messaging
                 </p>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-lg ${
-                    connections.whatsapp 
-                      ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  } transition`}
-                  onClick={() => toggleConnection('whatsapp')}
-                >
-                  {connections.whatsapp ? 'Connected ✓' : 'Connect WhatsApp'}
-                </button>
+                
+                {whatsappStatus === "processing" ? (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-gray-600">{whatsappStatusMessage}</p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      connections.whatsapp 
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    } transition`}
+                    onClick={launchWhatsAppSignup}
+                    disabled={whatsappStatus === "processing"}
+                  >
+                    {connections.whatsapp ? 'Connected ✓' : 'Connect WhatsApp'}
+                  </button>
+                )}
+                
+                {(whatsappStatus === "error" || whatsappStatus === "cancelled") && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {whatsappStatusMessage}
+                  </p>
+                )}
               </div>
             </div>
             
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-700">
-                <span className="font-medium">Note:</span> You can skip this step and connect accounts later in settings.
+                <span className="font-medium">Note:</span> You can skip this step and connect accounts later.
               </p>
             </div>
           </div>
@@ -2208,3 +2317,5 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
+

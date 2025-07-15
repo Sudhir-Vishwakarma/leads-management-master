@@ -1047,6 +1047,54 @@
 
 // export default Onboarding;
 
+interface FacebookPage {
+  id: string;
+  name: string;
+  access_token?: string;
+}
+
+interface FacebookPagesResponse {
+  data: FacebookPage[];
+  error?: any;
+}
+
+interface FBLoginResponse {
+  authResponse?: {
+    accessToken: string;
+    expiresIn: number;
+    signedRequest: string;
+    userID: string;
+    grantedScopes?: string;
+  };
+  status?: string;
+}
+
+interface FBUserPictureData {
+  url?: string;
+}
+
+interface FBUserPicture {
+  data?: FBUserPictureData;
+}
+
+interface FBUserResponse {
+  name?: string;
+  email?: string;
+  picture?: FBUserPicture;
+  error?: any;
+}
+
+interface FacebookPage {
+  id: string;
+  name: string;
+  access_token?: string;
+}
+
+interface FacebookPagesResponse {
+  data: FacebookPage[];
+  error?: any;
+}
+
 // Extend the Window interface to include fbAsyncInit for Facebook SDK
 declare global {
   interface Window {
@@ -1547,7 +1595,7 @@ const Onboarding = () => {
   setMetaStatusMessage("Connecting to Meta...");
 
   window.FB.login(
-    (response) => {
+    (response: FBLoginResponse) => {
       if (response.authResponse) {
         const accessToken = response.authResponse.accessToken;
 
@@ -1559,7 +1607,7 @@ const Onboarding = () => {
         window.FB.api(
           "/me",
           { fields: "name,email,picture" },
-          (userResponse) => {
+          (userResponse: FBUserResponse) => {
             if (userResponse && !userResponse.error) {
               setUserDetails((prev) => ({
                 ...prev,
@@ -1574,7 +1622,7 @@ const Onboarding = () => {
         );
 
         // 2. Get pages the user has access to
-        window.FB.api("/me/accounts", (pagesResponse) => {
+        window.FB.api("/me/accounts", (pagesResponse: FacebookPagesResponse) => {
           if (pagesResponse && pagesResponse.data?.length > 0) {
             const page = pagesResponse.data[0]; // Pick the first Page (or allow user to select)
             const pageId = page.id;

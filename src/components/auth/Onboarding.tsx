@@ -1473,158 +1473,71 @@ const Onboarding = () => {
   };
 
   // Handle Meta login
-  // const handleMetaLogin = useCallback(() => {
-  //   setMetaLoginStatus("processing");
-  //   setMetaStatusMessage("Connecting to Meta...");
-
-  //   window.FB.login(
-  //     (response: {
-  //       authResponse?: {
-  //         accessToken: string;
-  //         expiresIn: number;
-  //         signedRequest: string;
-  //         userID: string;
-  //         grantedScopes?: string;
-  //       };
-  //       status?: string;
-  //     }) => {
-  //       if (response.authResponse) {
-  //         setMetaLoginStatus("success");
-  //         setMetaStatusMessage("Connected to Meta!");
-  //         setConnections((prev) => ({ ...prev, meta: true }));
-
-  //         // Get user info
-  //         interface FBUserPictureData {
-  //           url?: string;
-  //         }
-
-  //         interface FBUserPicture {
-  //           data?: FBUserPictureData;
-  //         }
-
-  //         interface FBUserResponse {
-  //           name?: string;
-  //           email?: string;
-  //           picture?: FBUserPicture;
-  //           error?: any;
-  //         }
-
-  //         window.FB.api(
-  //           "/me",
-  //           { fields: "name,email,picture" },
-  //           (userResponse: FBUserResponse) => {
-  //             if (userResponse && !userResponse.error) {
-  //               setUserDetails((prev) => ({
-  //                 ...prev,
-  //                 fullName: userResponse.name || prev.fullName,
-  //                 email: userResponse.email || prev.email,
-  //                 ...(userResponse.picture?.data?.url && {
-  //                   profilePicUrl: userResponse.picture.data.url,
-  //                 }),
-  //               }));
-  //             }
-  //           }
-  //         );
-  //       } else {
-  //         setMetaLoginStatus("error");
-  //         setMetaStatusMessage("Meta connection failed or canceled");
-  //         setConnections((prev) => ({ ...prev, meta: false }));
-  //       }
-  //     },
-  //     {
-  //       scope:
-  //         "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
-  //       return_scopes: true,
-  //     }
-  //   );
-  // }, []);
   const handleMetaLogin = useCallback(() => {
-  setMetaLoginStatus("processing");
-  setMetaStatusMessage("Connecting to Meta...");
+    setMetaLoginStatus("processing");
+    setMetaStatusMessage("Connecting to Meta...");
 
-  window.FB.login(
-    (response) => {
-      if (response.authResponse) {
-        const accessToken = response.authResponse.accessToken;
+    window.FB.login(
+      (response: {
+        authResponse?: {
+          accessToken: string;
+          expiresIn: number;
+          signedRequest: string;
+          userID: string;
+          grantedScopes?: string;
+        };
+        status?: string;
+      }) => {
+        if (response.authResponse) {
+          setMetaLoginStatus("success");
+          setMetaStatusMessage("Connected to Meta!");
+          setConnections((prev) => ({ ...prev, meta: true }));
 
-        setMetaLoginStatus("success");
-        setMetaStatusMessage("Connected to Meta!");
-        setConnections((prev) => ({ ...prev, meta: true }));
+          // Get user info
+          interface FBUserPictureData {
+            url?: string;
+          }
 
-        // 1. Fetch basic user info
-        window.FB.api(
-          "/me",
-          { fields: "name,email,picture" },
-          (userResponse) => {
-            if (userResponse && !userResponse.error) {
-              setUserDetails((prev) => ({
-                ...prev,
-                fullName: userResponse.name || prev.fullName,
-                email: userResponse.email || prev.email,
-                ...(userResponse.picture?.data?.url && {
-                  profilePicUrl: userResponse.picture.data.url,
-                }),
-              }));
+          interface FBUserPicture {
+            data?: FBUserPictureData;
+          }
+
+          interface FBUserResponse {
+            name?: string;
+            email?: string;
+            picture?: FBUserPicture;
+            error?: any;
+          }
+
+          window.FB.api(
+            "/me",
+            { fields: "name,email,picture" },
+            (userResponse: FBUserResponse) => {
+              if (userResponse && !userResponse.error) {
+                setUserDetails((prev) => ({
+                  ...prev,
+                  fullName: userResponse.name || prev.fullName,
+                  email: userResponse.email || prev.email,
+                  ...(userResponse.picture?.data?.url && {
+                    profilePicUrl: userResponse.picture.data.url,
+                  }),
+                }));
+              }
             }
-          }
-        );
-
-        // 2. Get pages the user has access to
-        window.FB.api("/me/accounts", (pagesResponse) => {
-          if (pagesResponse && pagesResponse.data?.length > 0) {
-            const page = pagesResponse.data[0]; // Pick the first Page (or allow user to select)
-            const pageId = page.id;
-
-            // 3. Assign your Partner Business Manager to that Page
-            const PARTNER_BM_ID = "949040750500917";
-
-            fetch(`https://graph.facebook.com/v19.0/${pageId}/assigned_partners`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams({
-                partner_business: PARTNER_BM_ID,
-                tasks: "MANAGE,PUBLISH,MODERATE,ADVERTISE,ANALYZE",
-                access_token: accessToken,
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.success) {
-                  console.log("✅ Partner access assigned!");
-                  setMetaStatusMessage("Partner access granted successfully.");
-                } else {
-                  console.error("❌ Partner assignment failed:", data);
-                  setMetaStatusMessage("Failed to assign partner access.");
-                }
-              })
-              .catch((err) => {
-                console.error("❌ Network error:", err);
-                setMetaStatusMessage("Network error during partner assignment.");
-              });
-          } else {
-            console.warn("⚠️ No pages found or permission denied");
-            setMetaStatusMessage("No pages found or insufficient permissions.");
-          }
-        });
-      } else {
-        setMetaLoginStatus("error");
-        setMetaStatusMessage("Meta connection failed or canceled");
-        setConnections((prev) => ({ ...prev, meta: false }));
+          );
+        } else {
+          setMetaLoginStatus("error");
+          setMetaStatusMessage("Meta connection failed or canceled");
+          setConnections((prev) => ({ ...prev, meta: false }));
+        }
+      },
+      {
+        scope:
+          "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
+        return_scopes: true,
       }
-    },
-    {
-      scope:
-        "public_profile,email,pages_show_list,pages_read_engagement,business_management,pages_manage_metadata,pages_read_user_content",
-      return_scopes: true,
-    }
-  );
-}, []);
-
-
-
-
+    );
+  }, []);
 
   // Launch WhatsApp Embedded Signup
   const launchWhatsAppSignup = useCallback(() => {
@@ -2051,7 +1964,7 @@ const Onboarding = () => {
                   Facebook Account
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Connect your Facebook account
+                  Connect your Facebook and Instagram business accounts
                 </p>
 
                 {metaLoginStatus === "processing" ? (

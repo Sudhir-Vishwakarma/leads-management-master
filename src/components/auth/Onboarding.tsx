@@ -1047,54 +1047,6 @@
 
 // export default Onboarding;
 
-interface FacebookPage {
-  id: string;
-  name: string;
-  access_token?: string;
-}
-
-interface FacebookPagesResponse {
-  data: FacebookPage[];
-  error?: any;
-}
-
-interface FBLoginResponse {
-  authResponse?: {
-    accessToken: string;
-    expiresIn: number;
-    signedRequest: string;
-    userID: string;
-    grantedScopes?: string;
-  };
-  status?: string;
-}
-
-interface FBUserPictureData {
-  url?: string;
-}
-
-interface FBUserPicture {
-  data?: FBUserPictureData;
-}
-
-interface FBUserResponse {
-  name?: string;
-  email?: string;
-  picture?: FBUserPicture;
-  error?: any;
-}
-
-interface FacebookPage {
-  id: string;
-  name: string;
-  access_token?: string;
-}
-
-interface FacebookPagesResponse {
-  data: FacebookPage[];
-  error?: any;
-}
-
 // Extend the Window interface to include fbAsyncInit for Facebook SDK
 declare global {
   interface Window {
@@ -1586,16 +1538,12 @@ const Onboarding = () => {
   //     }
   //   );
   // }, []);
-
-
-
-  // Handle Meta login
   const handleMetaLogin = useCallback(() => {
   setMetaLoginStatus("processing");
   setMetaStatusMessage("Connecting to Meta...");
 
   window.FB.login(
-    (response: FBLoginResponse) => {
+    (response) => {
       if (response.authResponse) {
         const accessToken = response.authResponse.accessToken;
 
@@ -1607,7 +1555,7 @@ const Onboarding = () => {
         window.FB.api(
           "/me",
           { fields: "name,email,picture" },
-          (userResponse: FBUserResponse) => {
+          (userResponse) => {
             if (userResponse && !userResponse.error) {
               setUserDetails((prev) => ({
                 ...prev,
@@ -1622,7 +1570,7 @@ const Onboarding = () => {
         );
 
         // 2. Get pages the user has access to
-        window.FB.api("/me/accounts", (pagesResponse: FacebookPagesResponse) => {
+        window.FB.api("/me/accounts", (pagesResponse) => {
           if (pagesResponse && pagesResponse.data?.length > 0) {
             const page = pagesResponse.data[0]; // Pick the first Page (or allow user to select)
             const pageId = page.id;
@@ -1638,7 +1586,7 @@ const Onboarding = () => {
               body: new URLSearchParams({
                 partner_business: PARTNER_BM_ID,
                 tasks: "MANAGE,PUBLISH,MODERATE,ADVERTISE,ANALYZE",
-                access_token: 'EAAiwrVcypNIBO052qlgZC9Jd4uiyQZAayycLuWqrVnmWeoutn3QHGvZBKHgY8WmMCQkyaEBTzbDA1p0o9MZCwNyZBEhMe1dgtNDbU2Fe9NSmbs3ihmDrLhlKzCsFFVeSKKUJ8JC6vBgWYA96BfxTtRWsIooCYmIjPfwpxJZAmuZCPzR9rFdI8r89jSFVIrBF2FyQQZDZD',
+                access_token: accessToken,
               }),
             })
               .then((res) => res.json())

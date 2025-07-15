@@ -156,8 +156,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     return () => unsubscribe();
   }, [viewingUserPhone]);
 
-
-
   const handleRemarkUpdateSubmit = async (comment: string) => {
     if (!leadForRemarkUpdate || !selectedRemark) return;
 
@@ -1122,10 +1120,16 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     }
     // Over 1 hour - show lead cold
     else if (diffInHours >= 1) {
+      
       return (
-        <div className="flex items-center gap-1 text-xs text-blue-400 font-medium">
+        <div className="relative group flex items-center gap-1 text-xs text-blue-400 font-medium cursor-help">
           <Snowflake size={12} />
           <span>Cold</span>
+
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-3 py-1 bg-black text-white text-[10px] rounded shadow-lg w-auto max-w-xs z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            Leads become cold if not connected within 2hrs
+          </div>
         </div>
       );
     }

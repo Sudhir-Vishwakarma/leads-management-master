@@ -455,7 +455,7 @@ const Settings: React.FC = () => {
               </div>
             </button>
 
-            {/* {isAdmin && (
+            {isAdmin && (
               <button
                 onClick={() => setActiveTab("onboarding")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -490,7 +490,7 @@ const Settings: React.FC = () => {
                   )}
                 </div>
               </button>
-            )} */}
+            )}
           </nav>
         </div>
 
@@ -972,7 +972,7 @@ const Settings: React.FC = () => {
           )}
 
           {/* Onboarding Tab */}
-          {/* {activeTab === "onboarding" && isAdmin && (
+          {activeTab === "onboarding" && isAdmin && (
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-primary/10 to-indigo-50 dark:to-indigo-900/10 rounded-xl p-5 border border-primary/20">
                 <div className="flex border-b border-border mb-6">
@@ -1306,10 +1306,10 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
-          )} */}
+          )}
 
           {/* Add Users Tab */}
-          {/* {activeTab === "users" && isAdmin && (
+          {activeTab === "users" && isAdmin && (
             <div className="space-y-6">
               <div className="bg-muted rounded-xl p-5 border border-border">
                 <div className="flex items-center mb-4">
@@ -1468,7 +1468,7 @@ const Settings: React.FC = () => {
                 )}
               </div>
             </div>
-          )} */}
+          )}
         </div>
       </div>
     </div>

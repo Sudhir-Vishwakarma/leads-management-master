@@ -13,7 +13,6 @@ import {
   fetchLeadsFromFirestore,
   importLeadsFromCSV,
 } from "../services/api";
-// import { exportToCSV } from "../utils/exportCsv";
 import axios from "axios";
 import Papa from "papaparse";
 import { getAuth } from "firebase/auth";
@@ -45,8 +44,6 @@ import { useAuth } from "../context/AuthContext";
 import { useMeet } from "../context/MeetContext";
 import { fetchCustomFields } from "../services/customFields";
 import { differenceInHours, parseISO } from "date-fns";
-
-// Import Swiper React components and styles
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import type { Swiper as SwiperCore } from "swiper";
@@ -54,10 +51,8 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { setupChatToLeadSync } from "../services/Firebasesync";
 
-// Define CardColor type for KPI cards
 type CardColor = "blue" | "orange" | "green" | "purple" | "red" | "indigo";
 
-// Define props for the KPICard component
 interface KPICardProps {
   title: string;
   value: number | string;
@@ -69,18 +64,16 @@ interface KPICardProps {
     icon: React.ReactNode;
     description: string;
   };
-  isFlipped?: boolean;
 }
 
-// KPICard component implementation
 const KPICard: React.FC<KPICardProps> = ({
   title,
   value,
   icon,
   color = "blue",
   flipData,
-  isFlipped = false,
 }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
   const colorMap = {
     blue: {
       bg: "from-blue-50 to-blue-100",
@@ -128,12 +121,26 @@ const KPICard: React.FC<KPICardProps> = ({
 
   const colors = colorMap[color] || colorMap.blue;
 
+  useEffect(() => {
+    if (!flipData) return;
+
+    const interval = setInterval(() => {
+      setIsFlipped((prev) => !prev);
+    }, 5000); // Flip every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [flipData]);
+
   return (
-    <div className="kpi-card-outer w-full h-full">
-      <div className={`kpi-card-inner ${isFlipped ? "flipped" : ""}`}>
+    <div className="kpi-card-outer w-full h-full perspective-1000">
+      <div 
+        className={`kpi-card-inner relative w-full h-full transform-style-3d transition-transform duration-700 ${
+          isFlipped ? "rotate-y-180" : ""
+        }`}
+      >
         {/* Front Face */}
         <div
-          className={`kpi-card-front border ${colors.border} bg-gradient-to-br ${colors.bg} p-5 shadow-sm`}
+          className={`kpi-card-front absolute w-full h-full backface-hidden border ${colors.border} bg-gradient-to-br ${colors.bg} p-5 shadow-sm`}
         >
           <div className="flex flex-col h-full">
             <div className="flex items-start justify-between">
@@ -155,7 +162,7 @@ const KPICard: React.FC<KPICardProps> = ({
         {/* Back Face */}
         {flipData && (
           <div
-            className={`kpi-card-back border ${colors.border} bg-gradient-to-br ${colors.bg} p-5 shadow-sm`}
+            className={`kpi-card-back absolute w-full h-full backface-hidden border ${colors.border} bg-gradient-to-br ${colors.bg} p-5 shadow-sm rotate-y-180`}
           >
             <div className="flex items-center justify-between h-full">
               <div className="flex flex-col justify-center">
@@ -179,9 +186,7 @@ const KPICard: React.FC<KPICardProps> = ({
   );
 };
 
-// Main Dashboard component
 const Dashboard: React.FC = () => {
-  // State variables
   const { currentUser } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,16 +212,10 @@ const Dashboard: React.FC = () => {
   const { addToMeet } = useMeet();
   const swiperRef = useRef<SwiperCore | null>(null);
   const [accountId, setAccountId] = useState<string | null>(null);
-
-  // New state for flip animation
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  // New state for dynamic rate values
   const [contactRate, setContactRate] = useState(0);
   const [meetingRate, setMeetingRate] = useState(0);
   const [feedbackRate, setFeedbackRate] = useState(0);
 
-  // Fetch custom fields when component loads
   useEffect(() => {
     const loadCustomFields = async () => {
       if (currentUser?.phoneNumber) {
@@ -232,7 +231,6 @@ const Dashboard: React.FC = () => {
     loadCustomFields();
   }, [currentUser]);
 
-  // Add this useEffect inside the Dashboard component
   useEffect(() => {
     if (!currentUser?.phoneNumber || !accountId) return;
 
@@ -243,28 +241,26 @@ const Dashboard: React.FC = () => {
   }, [currentUser, accountId]);
 
   useEffect(() => {
-  const fetchConnectedWABA = async () => {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user || !user.phoneNumber) return;
-      
-      const phoneNumber = user.phoneNumber.replace(/[^\d]/g, "");
-      const userDoc = await getDoc(doc(db, `crm_users/${phoneNumber}`));
-      
-      if (userDoc.exists() && userDoc.data().connectedWABA) {
-        setAccountId(userDoc.data().connectedWABA);
+    const fetchConnectedWABA = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user || !user.phoneNumber) return;
+        
+        const phoneNumber = user.phoneNumber.replace(/[^\d]/g, "");
+        const userDoc = await getDoc(doc(db, `crm_users/${phoneNumber}`));
+        
+        if (userDoc.exists() && userDoc.data().connectedWABA) {
+          setAccountId(userDoc.data().connectedWABA);
+        }
+      } catch (error) {
+        console.error("Error fetching connected WABA:", error);
       }
-    } catch (error) {
-      console.error("Error fetching connected WABA:", error);
-    }
-  };
-  
-  fetchConnectedWABA();
-}, []);
+    };
+    
+    fetchConnectedWABA();
+  }, []);
 
-
-  // Combined KPI computation
   const computeKPIs = useCallback(
     (list: Lead[]) => {
       const meetingDone = list.filter(
@@ -272,18 +268,10 @@ const Dashboard: React.FC = () => {
       ).length;
       const dealDone = list.filter((l) => l.lead_status === "Deal Done").length;
 
-      // Calculate rates for flip cards
       const totalLeads = list.length;
       const contactedLeads = list.filter(
         (l) => l.lead_status !== "New Lead"
       ).length;
-
-      // Calculate rates
-
-      // Contact Rates
-      const newContactRate = 0;
-
-      // Meeting Rates
 
       const now = new Date();
       const meetingDoneRecent = list.filter((lead) => {
@@ -297,7 +285,6 @@ const Dashboard: React.FC = () => {
       const newMeetingRate =
         totalLeads > 0 ? Math.round((meetingDoneRecent / totalLeads) * 100) : 0;
 
-      // Feedback Rates
       const leadsWithRecentComments = list.filter((lead) => {
         if (!lead.customerComments || !Array.isArray(lead.customerComments))
           return false;
@@ -319,12 +306,10 @@ const Dashboard: React.FC = () => {
           ? Math.round((leadsWithRecentComments / totalLeads) * 100)
           : 0;
 
-      // Update state with new rates
-      setContactRate(newContactRate);
+      setContactRate(0);
       setMeetingRate(newMeetingRate);
       setFeedbackRate(newFeedbackRate);
 
-      // Default cards
       const defaultKpis: KPI[] = [
         {
           title: "Qualified Leads",
@@ -333,7 +318,7 @@ const Dashboard: React.FC = () => {
           color: "blue" as CardColor,
           flipData: {
             title: "Contact Rate",
-            value: `${newContactRate}%`,
+            value: `0%`,
             icon: <Phone size={24} />,
             description: "Leads contacted vs total",
           },
@@ -364,7 +349,6 @@ const Dashboard: React.FC = () => {
         },
       ];
 
-      // Custom cards
       const customCards: KPI[] = customKpis.map((kpi) => {
         const count = list.filter((l) => l.lead_status === kpi.label).length;
         let iconComponent: React.ReactNode;
@@ -411,20 +395,10 @@ const Dashboard: React.FC = () => {
     [customKpis]
   );
 
-  // Flip animation interval
-  useEffect(() => {
-    const flipInterval = setInterval(() => {
-      setIsFlipped((prev) => !prev);
-    }, 5000); // Flip every 30 seconds
-
-    return () => clearInterval(flipInterval);
-  }, []);
-
   useEffect(() => {
     setKpis(computeKPIs(leads));
   }, [leads, computeKPIs]);
 
-  // Combined data loading
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -456,11 +430,9 @@ const Dashboard: React.FC = () => {
           }
         }
 
-        // Fetch initial leads
         const initial = await fetchLeadsFromFirestore();
         setLeads(initial);
 
-        // Sync from Sheets in background
         syncLeadsFromSheets()
           .then(async () => {
             const updated = await fetchLeadsFromFirestore();
@@ -468,7 +440,6 @@ const Dashboard: React.FC = () => {
           })
           .catch(console.error);
 
-        // Fetch custom KPIs
         const kpis = await fetchCustomKpis(sanitizedPhone);
         setCustomKpis(kpis);
       } catch (err: unknown) {
@@ -499,7 +470,6 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  // CSV Import functions
   const handleCSVImport = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -513,7 +483,6 @@ const Dashboard: React.FC = () => {
 
       await importLeadsFromCSV(leads);
 
-      // Refresh leads after import
       const updatedLeads = await fetchLeadsFromFirestore();
       setLeads(updatedLeads);
 
@@ -568,15 +537,6 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  // Event handlers
-  // const handleStatusUpdate = (leadId: string, newStatus: string) => {
-  //   setLeads(
-  //     leads.map((lead) =>
-  //       lead.id === leadId ? { ...lead, lead_status: newStatus } : lead
-  //     )
-  //   );
-  // };
-
   const handleStatusUpdate = (leadId: string, newStatus: string) => {
     const now = new Date().toISOString();
 
@@ -619,13 +579,6 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  // const handleExportCSV = () => {
-  //   exportToCSV(
-  //     leads,
-  //     `leads_export_${new Date().toISOString().split("T")[0]}`
-  //   );
-  // };
-
   const handleDownloadSample = () => {
     const headers = [
       "created_time",
@@ -654,8 +607,6 @@ const Dashboard: React.FC = () => {
       setUserSwitchLoading(true);
       try {
         const userPhone = selectedOption.value;
-
-        // get current user's display name
         const auth = getAuth();
         const user = auth.currentUser;
         const displayName = user?.displayName || "User";
@@ -672,7 +623,6 @@ const Dashboard: React.FC = () => {
         setUserSwitchLoading(false);
       }
     } else {
-      // Reset to current signed-in user
       const auth = getAuth();
       const user = auth.currentUser;
       const displayName = user?.displayName || "User";
@@ -685,7 +635,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // UserDropdown component
   const UserDropdown = () => {
     type UserOption = {
       value: string;
@@ -739,8 +688,9 @@ const Dashboard: React.FC = () => {
         borderRadius: "0.375rem",
         boxShadow:
           "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        zIndex: 30,
+        zIndex: 9999,
       }),
+      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
       indicatorSeparator: () => ({ display: "none" }),
     };
 
@@ -788,6 +738,8 @@ const Dashboard: React.FC = () => {
             ),
           }}
           styles={selectStyles}
+          menuPortalTarget={document.body}
+          menuPosition="fixed"
         />
         {userSwitchLoading && (
           <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-md border border-gray-200">
@@ -832,7 +784,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto px-1 py-3">
-      {/* Enhanced KPI Cards Slider */}
       <div className="mb-8 relative group">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
           <button
@@ -865,7 +816,6 @@ const Dashboard: React.FC = () => {
                   icon={kpi.icon}
                   color={kpi.color as CardColor}
                   flipData={kpi.flipData}
-                  isFlipped={isFlipped && index < 3} // Only flip first 3 cards
                 />
               </div>
             </SwiperSlide>
@@ -883,7 +833,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Scrolling Note Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-500 rounded-lg overflow-hidden mb-6 py-3">
         <div className="relative overflow-hidden group">
           <div className="marquee-single flex items-center gap-x-8 min-w-max animate-marquee">
@@ -952,15 +901,6 @@ const Dashboard: React.FC = () => {
           >
             Import CSV
           </button>
-          {/* <button
-            onClick={handleExportCSV}
-            disabled={userSwitchLoading}
-            className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ${
-              userSwitchLoading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-          >
-            Export to CSV
-          </button> */}
         </div>
       </div>
 
@@ -1033,17 +973,48 @@ const Dashboard: React.FC = () => {
         addToMeet={addToMeet}
       />
 
-      {/* Add global styles for flip animation */}
       <style>{`
         .perspective-1000 {
           perspective: 1000px;
         }
-
+        
         .transform-style-3d {
           transform-style: preserve-3d;
         }
-
+        
+        .backface-hidden {
+          backface-visibility: hidden;
+        }
+        
         .rotate-y-180 {
+          transform: rotateY(180deg);
+        }
+        
+        .kpi-card-outer {
+          perspective: 1000px;
+        }
+        
+        .kpi-card-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          transform-style: preserve-3d;
+          transition: transform 0.7s;
+        }
+        
+        .kpi-card-front, .kpi-card-back {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          backface-visibility: hidden;
+          border-radius: 0.5rem;
+        }
+        
+        .kpi-card-back {
+          transform: rotateY(180deg);
+        }
+        
+        .flipped {
           transform: rotateY(180deg);
         }
       `}</style>
@@ -1052,3 +1023,6 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+
+

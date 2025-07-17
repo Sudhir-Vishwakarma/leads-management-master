@@ -19,7 +19,8 @@ import {
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import app from "../config/firebase";
-import { getFunctions, httpsCallable } from "firebase/functions";
+// import { getFunctions, httpsCallable } from "firebase/functions";
+import { where } from "firebase/firestore";
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -267,13 +268,7 @@ export const createLead = async (leadData: Lead) => {
 
   await setDoc(
     userDocRef,
-    {
-      createdAt: new Date().toLocaleString("en-IN", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }),
-      displayName: user.displayName || "",
-    },
+    { lastActive: serverTimestamp() },
     { merge: true }
   );
 
@@ -292,6 +287,68 @@ export const updateLeadByUser = (
   const leadDocRef = doc(db, `crm_users/${userPhone}/leads`, id);
   return updateDoc(leadDocRef, data);
 };
+
+
+
+
+
+
+
+
+export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
+  const chatsRef = collection(db, `accounts/${wabaId}/discussion`);
+  const processedNumbers = new Set<string>(); // Track processed numbers
+
+  return onSnapshot(chatsRef, async (snapshot) => {
+    const batch = writeBatch(db);
+    const leadsCollection = collection(db, `crm_users/${userPhone}/leads`);
+    
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        const phoneNumber = change.doc.id;
+        
+        // Skip if already processed in this session
+        if (processedNumbers.has(phoneNumber)) return;
+        processedNumbers.add(phoneNumber);
+
+        // Check for existing lead with this number
+        const q = query(
+          leadsCollection, 
+          where("whatsapp_number_", "==", phoneNumber)
+        );
+        
+        getDocs(q).then((existingLeads) => {
+          if (existingLeads.empty) {
+            const newLead: Lead = {
+              name: change.doc.data().client_name || `+${phoneNumber}`,
+              whatsapp_number_: phoneNumber,
+              comments: "Synced from WhatsApp chat",
+              platform: "WhatsApp",
+              lead_status: "New Lead",
+              created_time: Timestamp.now().toDate().toISOString(),
+              is_chat_lead: true,
+            };
+            
+            const leadRef = doc(leadsCollection);
+            batch.set(leadRef, newLead);
+            batch.commit();
+          }
+        });
+      }
+    });
+  });
+};
+
+
+
+
+
+
+
+
+
+
+
 
 export const getChatDocument = (accountId: string, chatId: string) =>
     doc(db, `accounts/${accountId}/discussion/${chatId}`);
@@ -739,3 +796,4 @@ export const getClientPhoneFromPath = (path: string): string | null => {
   const match = path.match(/\/accounts\/\d+\/discussion\/([\d+]+)/);
   return match ? match[1] : null;
 };
+

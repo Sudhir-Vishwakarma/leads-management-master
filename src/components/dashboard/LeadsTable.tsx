@@ -123,12 +123,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
   const remarkOptions = [
     "DNP/DNC",
     "Interested",
-    "Not Interested",
     "Qualifier Issue",
     "Location Issue",
     "Targeting Issue",
-    "Not Qualified",
-    "Fake/Spam",
+    "Not Interested",
   ];
 
   // Handle remark update
@@ -1120,7 +1118,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     }
     // Over 1 hour - show lead cold
     else if (diffInHours >= 1) {
-      
       return (
         <div className="relative group flex items-center gap-1 text-xs text-blue-400 font-medium cursor-help">
           <Snowflake size={12} />
@@ -1731,7 +1728,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                     </div>
 
                     <CollapsibleSection
-                      title="Customers"
+                      title="Customer Type"
                       icon={<Tag className="text-purple-500" size={16} />}
                       isOpen={openSectionKey === "customerType"}
                       onToggle={() => toggleSection("customerType")}

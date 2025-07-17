@@ -525,9 +525,9 @@ const Meta = () => {
     }
 
     const txnid = "TXN" + Date.now();
-    const productinfo = "Meta Campaign";
+    const productinfo = "Ai Ads Campaign";
     const firstname = user.displayName || "Ashish";
-    const email = user.email || "ashish@example.com";
+    const email = user.email || "";
     const phone = user.phoneNumber || "9999999999";
 
     const surl = `https://asia-south1-starzapp.cloudfunctions.net/payu-server/payu/redirect?txnid=${txnid}`;

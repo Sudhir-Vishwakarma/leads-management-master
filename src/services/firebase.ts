@@ -19,7 +19,7 @@ import {
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import app from "../config/firebase";
-// import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { where } from "firebase/firestore";
 
 export const db = getFirestore(app);
@@ -114,21 +114,62 @@ const extractMessageBody = (data: unknown): string => {
 };
 
 
-export const getConnectedWABA = async (userPhone: string): Promise<string> => {
-  const userDocRef = doc(db, `crm_users/${userPhone}`);
-  const userDoc = await getDoc(userDocRef);
+// export const getConnectedWABA = async (userPhone: string): Promise<string> => {
+//   const userDocRef = doc(db, `crm_users/${userPhone}`);
+//   const userDoc = await getDoc(userDocRef);
   
-  if (!userDoc.exists()) {
-    throw new Error("User document not found");
+//   if (!userDoc.exists()) {
+//     throw new Error("User document not found");
+//   }
+  
+//   const wabaId = userDoc.data().connectedWABA;
+//   if (!wabaId) {
+//     throw new Error("No WABA connected to this user");
+//   }
+  
+//   return wabaId;
+// };
+export const getConnectedWABA = async (userPhone: string): Promise<string> => {
+  if (!userPhone) {
+    throw new Error("User phone number is required");
   }
   
-  const wabaId = userDoc.data().connectedWABA;
+  // Normalize phone number by removing non-digit characters
+  const normalizedPhone = userPhone.replace(/[^\d]/g, "");
+  const userDocRef = doc(db, `crm_users/${normalizedPhone}`);
+  
+  let userDoc = await getDoc(userDocRef);
+  
+  // If the document doesn't exist, create it
+  if (!userDoc.exists()) {
+    try {
+      await setDoc(userDocRef, {
+        connectedWABA: null,
+        createdAt: serverTimestamp(),
+        lastActive: serverTimestamp(),
+        displayName: `User ${normalizedPhone}`,
+        isAdmin: false,
+        // Add any other default fields you have for a user
+      });
+      // Re-fetch the document
+      userDoc = await getDoc(userDocRef);
+    } catch (error) {
+      console.error("Error creating user document:", error);
+      throw new Error("Failed to initialize user account");
+    }
+  }
+  
+  const wabaId = userDoc.data()?.connectedWABA;
   if (!wabaId) {
     throw new Error("No WABA connected to this user");
   }
   
   return wabaId;
 };
+
+
+
+
 
 export const subscribeToLeads = (
   userPhone: string,

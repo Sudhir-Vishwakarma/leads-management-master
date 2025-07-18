@@ -4,7 +4,9 @@ import React, {
   useCallback,
   ChangeEvent,
   useRef,
+  // useMemo
 } from "react";
+import { FaRegLightbulb } from "react-icons/fa";
 import LeadsTable from "../components/dashboard/LeadsTable";
 import { Lead, CustomKpi, CustomField } from "../types/types";
 import { KPI } from "../types";

@@ -38,6 +38,7 @@ export interface Lead {
   lead_status: string;
   created_time: string;
   is_chat_lead?: boolean;
+  leadScore?: number;
   [key: string]: string | number | boolean | undefined;
 }
 
@@ -52,6 +53,7 @@ export interface Chat {
     timestamp: Timestamp;
   };
   unreadCount?: number;
+  leadScore?: number;
 }
 
 export interface Media {
@@ -171,6 +173,18 @@ export const getConnectedWABA = async (userPhone: string): Promise<string> => {
 
 
 
+// export const subscribeToLeads = (
+//   userPhone: string,
+//   callback: (leads: Lead[]) => void
+// ) => {
+//   const leadsRef = collection(db, `crm_users/${userPhone}/leads`);
+//   return onSnapshot(leadsRef, (snapshot) => {
+//     const leads = snapshot.docs.map(
+//       (doc) => ({ id: doc.id, ...doc.data() } as Lead)
+//     );
+//     callback(leads);
+//   });
+// };
 export const subscribeToLeads = (
   userPhone: string,
   callback: (leads: Lead[]) => void
@@ -336,49 +350,140 @@ export const updateLeadByUser = (
 
 
 
+
+// export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
+//   const chatsRef = collection(db, `accounts/${wabaId}/discussion`);
+  
+//   return onSnapshot(chatsRef, async (snapshot) => {
+//     const batch = writeBatch(db);
+//     const leadsCollection = collection(db, `crm_users/${userPhone}/leads`);
+    
+//     for (const change of snapshot.docChanges()) {
+//       if (change.type === "added" || change.type === "modified") {
+//         const data = change.doc.data();
+//         const phoneNumber = change.doc.id;
+        
+//         // Extract leadScore from chat data
+//         let leadScore = 0;
+//         if (typeof data.leadScore === 'number') {
+//           leadScore = data.leadScore;
+//         } else if (typeof data.leadScore === 'string') {
+//           leadScore = parseInt(data.leadScore, 10) || 0;
+//         }
+        
+//         // Skip if leadScore < 70
+//         if (leadScore < 70) continue;
+        
+//         // Check for existing lead
+//         const q = query(
+//           leadsCollection, 
+//           where("whatsapp_number_", "==", phoneNumber)
+//         );
+        
+//         const existingLeads = await getDocs(q);
+        
+//         if (existingLeads.empty) {
+//           const newLead: Lead = {
+//             name: data.client_name || `+${phoneNumber}`,
+//             whatsapp_number_: phoneNumber,
+//             comments: "Synced from WhatsApp chat",
+//             platform: "WhatsApp",
+//             lead_status: "New Lead",
+//             created_time: Timestamp.now().toDate().toISOString(),
+//             is_chat_lead: true,
+//             leadScore: leadScore,
+//           };
+
+//           const leadRef = doc(leadsCollection);
+//           batch.set(leadRef, newLead);
+//         } else {
+//           // Update existing lead with new score
+//           const leadDoc = existingLeads.docs[0];
+//           await updateDoc(leadDoc.ref, {
+//             leadScore: leadScore,
+//             name: data.client_name || leadDoc.data().name,
+//           });
+//         }
+//       }
+//     }
+    
+//     if (batch._mutations.length > 0) {
+//       try {
+//         await batch.commit();
+//       } catch (error) {
+//         console.error("Error committing batch of leads:", error);
+//       }
+//     }
+//   });
+// };
+
 export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
   const chatsRef = collection(db, `accounts/${wabaId}/discussion`);
-  const processedNumbers = new Set<string>(); // Track processed numbers
-
+  
   return onSnapshot(chatsRef, async (snapshot) => {
     const batch = writeBatch(db);
     const leadsCollection = collection(db, `crm_users/${userPhone}/leads`);
     
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === "added") {
+    for (const change of snapshot.docChanges()) {
+      if (change.type === "added" || change.type === "modified") {
+        const data = change.doc.data();
         const phoneNumber = change.doc.id;
         
-        // Skip if already processed in this session
-        if (processedNumbers.has(phoneNumber)) return;
-        processedNumbers.add(phoneNumber);
-
-        // Check for existing lead with this number
+        // Get leadScore - default to 0 if missing/deleted
+        let leadScore = 0;
+        if (typeof data.leadScore === 'number') {
+          leadScore = data.leadScore;
+        } else if (typeof data.leadScore === 'string') {
+          leadScore = parseInt(data.leadScore, 10) || 0;
+        }
+        
+        // Skip if leadScore < 70
+        if (leadScore < 70) continue;
+        
+        // Check for existing lead
         const q = query(
           leadsCollection, 
           where("whatsapp_number_", "==", phoneNumber)
         );
         
-        getDocs(q).then((existingLeads) => {
-          if (existingLeads.empty) {
-            const newLead: Lead = {
-              name: change.doc.data().client_name || `+${phoneNumber}`,
-              whatsapp_number_: phoneNumber,
-              comments: "Synced from WhatsApp chat",
-              platform: "WhatsApp",
-              lead_status: "New Lead",
-              created_time: Timestamp.now().toDate().toISOString(),
-              is_chat_lead: true,
-            };
-            
-            const leadRef = doc(leadsCollection);
-            batch.set(leadRef, newLead);
-            batch.commit();
-          }
-        });
+        const existingLeads = await getDocs(q);
+        
+        if (existingLeads.empty) {
+          const newLead: Lead = {
+            name: data.client_name || `+${phoneNumber}`,
+            whatsapp_number_: phoneNumber,
+            comments: "Synced from WhatsApp chat",
+            platform: "WhatsApp",
+            lead_status: "New Lead",
+            created_time: Timestamp.now().toDate().toISOString(),
+            is_chat_lead: true,
+            leadScore: leadScore,
+          };
+
+          const leadRef = doc(leadsCollection);
+          batch.set(leadRef, newLead);
+        } else {
+          // Update existing lead with new score
+          const leadDoc = existingLeads.docs[0];
+          batch.update(leadDoc.ref, {
+            leadScore: leadScore,
+            name: data.client_name || leadDoc.data().name,
+          });
+        }
       }
-    });
+    }
+    
+    if (batch._mutations.length > 0) {
+      try {
+        await batch.commit();
+      } catch (error) {
+        console.error("Error committing batch of leads:", error);
+      }
+    }
   });
 };
+
+
 
 
 
@@ -538,6 +643,10 @@ export const subscribeChats = (
         const name =
           data.client_name || data.contact?.name || data.name || `+${chatId}`;
 
+
+        // Add leadScore
+        const leadScore = data.leadScore || 0;
+
         // Always get last message from messages collection
         const msgRef = collection(
           db,
@@ -564,6 +673,7 @@ export const subscribeChats = (
           },
           lastMessage,
           unreadCount: data.unreadCount || 0,
+          leadScore, // Include leadScore
         } as Chat;
       })
     );
@@ -837,4 +947,5 @@ export const getClientPhoneFromPath = (path: string): string | null => {
   const match = path.match(/\/accounts\/\d+\/discussion\/([\d+]+)/);
   return match ? match[1] : null;
 };
+
 

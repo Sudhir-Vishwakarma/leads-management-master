@@ -12,6 +12,10 @@ export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
       if (change.type === "added") {
         const chat = change.doc.data();
         const phoneNumber = change.doc.id;
+        const leadScore = chat.leadScore || 0; // Get leadScore
+
+        // Skip if leadScore < 70
+        if (leadScore < 70) continue;
 
         const leadsCollection = collection(db, `crm_users/${userPhone}/leads`);
         
@@ -30,6 +34,7 @@ export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
             lead_status: "New Lead",
             created_time: Timestamp.now().toDate().toISOString(),
             is_chat_lead: true,
+            leadScore: leadScore,
           };
 
           const leadRef = doc(leadsCollection); // ✅ auto-ID

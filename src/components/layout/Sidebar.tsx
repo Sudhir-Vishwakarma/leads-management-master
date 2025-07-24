@@ -19,7 +19,7 @@ import {
   Globe,
   ShoppingCart,
   // Database as DatabaseIcon,
-  // ShoppingBag,
+  ShoppingBag,
   // DollarSign,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -274,10 +274,10 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
           </NavLink> */}
 
           {/* Order */}
-          {/* <NavLink to="/dashboard/orders" className={({ isActive }) => getNavLinkClass(isActive)}>
+          <NavLink to="/dashboard/orders" className={({ isActive }) => getNavLinkClass(isActive)}>
             <ShoppingBag className="mr-3 h-5 w-5" />
-            Order
-          </NavLink> */}
+            Orders
+          </NavLink>
         </nav>
 
         {/* Footer */}

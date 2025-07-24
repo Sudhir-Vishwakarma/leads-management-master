@@ -344,79 +344,6 @@ export const updateLeadByUser = (
 };
 
 
-
-
-
-
-
-
-
-// export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
-//   const chatsRef = collection(db, `accounts/${wabaId}/discussion`);
-  
-//   return onSnapshot(chatsRef, async (snapshot) => {
-//     const batch = writeBatch(db);
-//     const leadsCollection = collection(db, `crm_users/${userPhone}/leads`);
-    
-//     for (const change of snapshot.docChanges()) {
-//       if (change.type === "added" || change.type === "modified") {
-//         const data = change.doc.data();
-//         const phoneNumber = change.doc.id;
-        
-//         // Extract leadScore from chat data
-//         let leadScore = 0;
-//         if (typeof data.leadScore === 'number') {
-//           leadScore = data.leadScore;
-//         } else if (typeof data.leadScore === 'string') {
-//           leadScore = parseInt(data.leadScore, 10) || 0;
-//         }
-        
-//         // Skip if leadScore < 70
-//         if (leadScore < 70) continue;
-        
-//         // Check for existing lead
-//         const q = query(
-//           leadsCollection, 
-//           where("whatsapp_number_", "==", phoneNumber)
-//         );
-        
-//         const existingLeads = await getDocs(q);
-        
-//         if (existingLeads.empty) {
-//           const newLead: Lead = {
-//             name: data.client_name || `+${phoneNumber}`,
-//             whatsapp_number_: phoneNumber,
-//             comments: "Synced from WhatsApp chat",
-//             platform: "WhatsApp",
-//             lead_status: "New Lead",
-//             created_time: Timestamp.now().toDate().toISOString(),
-//             is_chat_lead: true,
-//             leadScore: leadScore,
-//           };
-
-//           const leadRef = doc(leadsCollection);
-//           batch.set(leadRef, newLead);
-//         } else {
-//           // Update existing lead with new score
-//           const leadDoc = existingLeads.docs[0];
-//           await updateDoc(leadDoc.ref, {
-//             leadScore: leadScore,
-//             name: data.client_name || leadDoc.data().name,
-//           });
-//         }
-//       }
-//     }
-    
-//     if (batch._mutations.length > 0) {
-//       try {
-//         await batch.commit();
-//       } catch (error) {
-//         console.error("Error committing batch of leads:", error);
-//       }
-//     }
-//   });
-// };
-
 export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
   const chatsRef = collection(db, `accounts/${wabaId}/discussion`);
   
@@ -482,18 +409,6 @@ export const setupChatToLeadSync = (userPhone: string, wabaId: string) => {
     }
   });
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export const getChatDocument = (accountId: string, chatId: string) =>

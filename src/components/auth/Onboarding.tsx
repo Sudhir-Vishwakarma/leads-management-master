@@ -1,8 +1,17 @@
-// import React, { useState, useEffect } from 'react';
-// import { doc, setDoc } from 'firebase/firestore';
-// import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
-// import app, { firestore } from '../../config/firebase';
-// import { useNavigate } from 'react-router-dom';
+// // Extend the Window interface to include fbAsyncInit for Facebook SDK
+// declare global {
+//   interface Window {
+//     fbAsyncInit?: () => void;
+//     FB: any;
+//     gapi: any;
+//   }
+// }
+
+// import React, { useState, useEffect, useCallback, useRef } from "react";
+// import { doc, setDoc } from "firebase/firestore";
+// import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
+// import app, { firestore } from "../../config/firebase";
+// import { useNavigate } from "react-router-dom";
 // import {
 //   ArrowRight,
 //   ArrowLeft,
@@ -13,11 +22,13 @@
 //   FileText,
 //   Check,
 //   X,
-//   Mail,
-//   Share2,
-//   MessageSquare
-// } from 'lucide-react';
-// import { useAuth } from '../../context/AuthContext';
+//   Loader2,
+//   CheckCircle,
+//   AlertCircle,
+// } from "lucide-react";
+// import { FaGoogle, FaFacebook, FaWhatsapp } from "react-icons/fa";
+// import { useAuth } from "../../context/AuthContext";
+// import { useGoogleLogin } from "@react-oauth/google";
 
 // // Industry-specific questions and keywords
 // const industryData = {
@@ -32,12 +43,20 @@
 //       "Are you looking for individual or family coverage?",
 //       "What's your annual income range?",
 //       "Do you own any high-value assets?",
-//       "What's your risk tolerance level?"
+//       "What's your risk tolerance level?",
 //     ],
 //     keywords: [
-//       "Term Life", "Health Coverage", "Auto Insurance", "Homeowners", "Liability",
-//       "Premium", "Deductible", "Claim Process", "Renewal", "Risk Assessment"
-//     ]
+//       "Term Life",
+//       "Health Coverage",
+//       "Auto Insurance",
+//       "Homeowners",
+//       "Liability",
+//       "Premium",
+//       "Deductible",
+//       "Claim Process",
+//       "Renewal",
+//       "Risk Assessment",
+//     ],
 //   },
 //   Loan: {
 //     questions: [
@@ -50,12 +69,20 @@
 //       "What's the purpose of the loan?",
 //       "What loan term are you looking for?",
 //       "Do you have collateral to offer?",
-//       "Have you declared bankruptcy in the last 7 years?"
+//       "Have you declared bankruptcy in the last 7 years?",
 //     ],
 //     keywords: [
-//       "Personal Loan", "Mortgage", "Business Loan", "Interest Rate", "EMI",
-//       "Credit Score", "Collateral", "Pre-approval", "Refinance", "Debt Consolidation"
-//     ]
+//       "Personal Loan",
+//       "Mortgage",
+//       "Business Loan",
+//       "Interest Rate",
+//       "EMI",
+//       "Credit Score",
+//       "Collateral",
+//       "Pre-approval",
+//       "Refinance",
+//       "Debt Consolidation",
+//     ],
 //   },
 //   "Real Estate": {
 //     questions: [
@@ -68,12 +95,20 @@
 //       "Are you working with another agent?",
 //       "What's your preferred property size?",
 //       "Do you have any specific amenities requirements?",
-//       "Are you interested in investment properties?"
+//       "Are you interested in investment properties?",
 //     ],
 //     keywords: [
-//       "Residential", "Commercial", "Lease", "Brokerage", "Property Management",
-//       "Appraisal", "Closing", "Down Payment", "Listing", "Market Analysis"
-//     ]
+//       "Residential",
+//       "Commercial",
+//       "Lease",
+//       "Brokerage",
+//       "Property Management",
+//       "Appraisal",
+//       "Closing",
+//       "Down Payment",
+//       "Listing",
+//       "Market Analysis",
+//     ],
 //   },
 //   Education: {
 //     questions: [
@@ -86,12 +121,20 @@
 //       "Do you have any prior qualifications?",
 //       "What are your career goals?",
 //       "Do you require accommodation services?",
-//       "Are you interested in international programs?"
+//       "Are you interested in international programs?",
 //     ],
 //     keywords: [
-//       "Online Courses", "Certification", "Vocational Training", "Higher Education", "Scholarships",
-//       "Admissions", "Curriculum", "Faculty", "Accreditation", "Placement"
-//     ]
+//       "Online Courses",
+//       "Certification",
+//       "Vocational Training",
+//       "Higher Education",
+//       "Scholarships",
+//       "Admissions",
+//       "Curriculum",
+//       "Faculty",
+//       "Accreditation",
+//       "Placement",
+//     ],
 //   },
 //   "HR Agency": {
 //     questions: [
@@ -104,12 +147,20 @@
 //       "Do you require background check services?",
 //       "What's your budget per hire?",
 //       "Do you need payroll management services?",
-//       "What ATS systems do you use?"
+//       "What ATS systems do you use?",
 //     ],
 //     keywords: [
-//       "Recruitment", "Talent Acquisition", "Executive Search", "Onboarding", "Payroll",
-//       "Compliance", "Training", "Performance Management", "Contract Staffing", "HR Consulting"
-//     ]
+//       "Recruitment",
+//       "Talent Acquisition",
+//       "Executive Search",
+//       "Onboarding",
+//       "Payroll",
+//       "Compliance",
+//       "Training",
+//       "Performance Management",
+//       "Contract Staffing",
+//       "HR Consulting",
+//     ],
 //   },
 //   Others: {
 //     questions: [
@@ -122,13 +173,21 @@
 //       "Do you have any specific requirements for leads?",
 //       "What's your preferred method of contact?",
 //       "What industries do you primarily serve?",
-//       "What's your company size?"
+//       "What's your company size?",
 //     ],
 //     keywords: [
-//       "Custom Solution", "General Business", "B2B", "B2C", "Consulting",
-//       "Partnership", "Innovation", "Growth", "Diversified", "Flexible"
-//     ]
-//   }
+//       "Custom Solution",
+//       "General Business",
+//       "B2B",
+//       "B2C",
+//       "Consulting",
+//       "Partnership",
+//       "Innovation",
+//       "Growth",
+//       "Diversified",
+//       "Flexible",
+//     ],
+//   },
 // };
 
 // // Step titles for header
@@ -138,14 +197,14 @@
 //   "Connect Your Accounts",
 //   "Personal Details",
 //   "Upload Documents",
-//   "Leads Qualifier"
+//   "Leads Qualifier",
 // ];
 
 // const Onboarding = () => {
 //   const [step, setStep] = useState(1);
 //   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState('');
-//   const [progress, setProgress] = useState(16); // 100/6 ≈ 16.66%
+//   const [error, setError] = useState("");
+//   const [progress, setProgress] = useState(16);
 //   const { currentUser, refreshOnboardingStatus } = useAuth();
 //   const navigate = useNavigate();
 
@@ -153,37 +212,361 @@
 //   const storage = getStorage(app);
 
 //   // Form state
-//   const [industry, setIndustry] = useState('');
+//   const [industry, setIndustry] = useState("");
 //   const [userDetails, setUserDetails] = useState({
 //     profilePic: null as File | null,
-//     fullName: '',
-//     userName: '',
-//     phone: currentUser?.phoneNumber || '',
-//     phoneWithoutWhatsApp: '',
-//     email: '',
-//     dateOfBirth: '',
-//     gender: '',
-//     street: '',
-//     city: '',
-//     state: '',
-//     zip: '',
-//     country: ''
+//     fullName: "",
+//     userName: "",
+//     phone: currentUser?.phoneNumber || "",
+//     phoneWithoutWhatsApp: "",
+//     email: "",
+//     dateOfBirth: "",
+//     gender: "",
+//     street: "",
+//     city: "",
+//     state: "",
+//     zip: "",
+//     country: "",
 //   });
 //   const [documents, setDocuments] = useState({
 //     udyam: [] as File[],
-//     businessProofs: [] as File[]
+//     businessProofs: [] as File[],
 //   });
 //   const [leadsData, setLeadsData] = useState({
 //     selectedQuestions: [] as string[],
-//     location: '',
+//     location: "",
 //     selectedKeywords: [] as string[],
-//     usp: ''
+//     usp: "",
 //   });
 //   const [connections, setConnections] = useState({
 //     google: false,
 //     meta: false,
-//     whatsapp: false
+//     whatsapp: false,
 //   });
+
+//   // Google connection states
+//   const [googleLoading, setGoogleLoading] = useState(false);
+//   const [googleStatusMessage, setGoogleStatusMessage] = useState("");
+//   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(
+//     null
+//   );
+
+//   // WhatsApp Business Account details
+//   const [whatsappBusinessAccount, setWhatsappBusinessAccount] = useState<{
+//     phoneNumberId?: string;
+//     wabaId?: string;
+//   }>({});
+
+//   // Meta SDK states
+//   const [metaSdkReady, setMetaSdkReady] = useState(false);
+//   const [metaLoginStatus, setMetaLoginStatus] = useState<
+//     "idle" | "processing" | "success" | "error"
+//   >("idle");
+//   const [metaStatusMessage, setMetaStatusMessage] = useState("");
+
+//   // WhatsApp SDK states
+//   const [whatsappStatus, setWhatsappStatus] = useState<
+//     "idle" | "processing" | "success" | "error" | "cancelled"
+//   >("idle");
+//   const [whatsappStatusMessage, setWhatsappStatusMessage] = useState("");
+
+//   // Google API loading ref
+//   const googleApiLoadPromise = useRef<Promise<void> | null>(null);
+
+//   // Initialize Facebook SDK
+//   useEffect(() => {
+//     const initFacebookSdk = () => {
+//       // Check if SDK is already loaded
+//       if (window.FB) {
+//         setMetaSdkReady(true);
+//         return;
+//       }
+
+//       window.fbAsyncInit = function () {
+//         window.FB.init({
+//           appId: "2446058352452818",
+//           cookie: true,
+//           xfbml: true,
+//           version: "v22.0",
+//         });
+//         setMetaSdkReady(true);
+//       };
+
+//       // Load SDK only once
+//       if (!document.getElementById("facebook-jssdk")) {
+//         const script = document.createElement("script");
+//         script.id = "facebook-jssdk";
+//         script.src = "https://connect.facebook.net/en_US/sdk.js";
+//         script.async = true;
+//         script.defer = true;
+//         script.onerror = () => {
+//           setError("Failed to load Meta SDK. Please try again.");
+//           setMetaSdkReady(false);
+//         };
+//         document.body.appendChild(script);
+//       }
+//     };
+
+//     initFacebookSdk();
+//   }, []);
+
+//   // Ensure Google API is loaded and ready
+//   const ensureGoogleApiLoaded = useCallback(() => {
+//     if (googleApiLoadPromise.current) {
+//       return googleApiLoadPromise.current;
+//     }
+
+//     googleApiLoadPromise.current = new Promise<void>((resolve, reject) => {
+//       // Check if already loaded
+//       if (window.gapi && window.gapi.load) {
+//         resolve();
+//         return;
+//       }
+
+//       // Create script element
+//       const script = document.createElement("script");
+//       script.src = "https://apis.google.com/js/platform.js";
+//       script.async = true;
+//       script.defer = true;
+//       script.onload = () => {
+//         // Wait for gapi to be available with retries
+//         const checkGapi = (retries = 20, delay = 100) => {
+//           if (window.gapi && window.gapi.load) {
+//             resolve();
+//           } else if (retries > 0) {
+//             setTimeout(() => checkGapi(retries - 1, delay), delay);
+//           } else {
+//             reject(new Error("Google API failed to load"));
+//           }
+//         };
+//         checkGapi();
+//       };
+//       script.onerror = () => {
+//         reject(new Error("Failed to load Google API"));
+//       };
+//       document.body.appendChild(script);
+//     });
+
+//     return googleApiLoadPromise.current;
+//   }, []);
+
+//   // Add WhatsApp message listener
+//   useEffect(() => {
+//     const handleWhatsAppMessage = (event: MessageEvent) => {
+//       if (
+//         event.origin !== "https://www.facebook.com" &&
+//         event.origin !== "https://web.facebook.com"
+//       ) {
+//         return;
+//       }
+
+//       try {
+//         const data = JSON.parse(event.data);
+//         if (data.type === "WA_EMBEDDED_SIGNUP") {
+//           if (data.event === "FINISH") {
+//             const { phone_number_id, waba_id } = data.data;
+//             setWhatsappBusinessAccount({
+//               phoneNumberId: phone_number_id,
+//               wabaId: waba_id,
+//             });
+//             setConnections((prev) => ({ ...prev, whatsapp: true }));
+//             setWhatsappStatus("success");
+//             setWhatsappStatusMessage(
+//               "WhatsApp business account connected successfully"
+//             );
+//           } else if (data.event === "CANCEL") {
+//             const { current_step } = data.data;
+//             setWhatsappStatus("cancelled");
+//             setWhatsappStatusMessage(`Cancelled at step ${current_step}`);
+//           } else if (data.event === "ERROR") {
+//             const { error_message } = data.data;
+//             setWhatsappStatus("error");
+//             setWhatsappStatusMessage(error_message || "Unknown error occurred");
+//           }
+//         }
+//       } catch {
+//         console.log("Non JSON Responses", event.data);
+//       }
+//     };
+
+//     window.addEventListener("message", handleWhatsAppMessage);
+//     return () => window.removeEventListener("message", handleWhatsAppMessage);
+//   }, []);
+
+//   // Handle Google Sign-In
+//   const handleGoogleConnect = useGoogleLogin({
+//     scope: "https://www.googleapis.com/auth/business.manage",
+//     onSuccess: (tokenResponse) => {
+//       const accessToken = tokenResponse.access_token;
+
+//       // Save access token and update UI
+//       setGoogleAccessToken(accessToken);
+//       setConnections((prev) => ({ ...prev, google: true }));
+//       setGoogleStatusMessage("Google connected successfully!");
+//     },
+//     onError: (errorResponse) => {
+//       console.error("Google sign-in error", errorResponse);
+//       setGoogleStatusMessage("Google connection failed or canceled");
+//     },
+//   });
+
+//   // Get Google status icon
+//   const getGoogleStatusIcon = () => {
+//     if (googleLoading) {
+//       return <Loader2 className="w-5 h-5 animate-spin" />;
+//     }
+//     return (
+//       <FaGoogle
+//         size={32}
+//         className={connections.google ? "text-green-600" : "text-gray-500"}
+//       />
+//     );
+//   };
+
+//   // Handle Meta login
+//   const handleMetaLogin = useCallback(() => {
+//     setMetaLoginStatus("processing");
+//     setMetaStatusMessage("Connecting to Meta...");
+
+//     window.FB.login(
+//       (response: {
+//         authResponse?: {
+//           accessToken: string;
+//           expiresIn: number;
+//           signedRequest: string;
+//           userID: string;
+//           grantedScopes?: string;
+//         };
+//         status?: string;
+//       }) => {
+//         if (response.authResponse) {
+//           setMetaLoginStatus("success");
+//           setMetaStatusMessage("Connected to Meta!");
+//           setConnections((prev) => ({ ...prev, meta: true }));
+
+//           // Get user info
+//           interface FBUserPictureData {
+//             url?: string;
+//           }
+
+//           interface FBUserPicture {
+//             data?: FBUserPictureData;
+//           }
+
+//           interface FBUserResponse {
+//             name?: string;
+//             email?: string;
+//             picture?: FBUserPicture;
+//             error?: any;
+//           }
+
+//           window.FB.api(
+//             "/me",
+//             { fields: "name,email,picture" },
+//             (userResponse: FBUserResponse) => {
+//               if (userResponse && !userResponse.error) {
+//                 setUserDetails((prev) => ({
+//                   ...prev,
+//                   fullName: userResponse.name || prev.fullName,
+//                   email: userResponse.email || prev.email,
+//                   ...(userResponse.picture?.data?.url && {
+//                     profilePicUrl: userResponse.picture.data.url,
+//                   }),
+//                 }));
+//               }
+//             }
+//           );
+//         } else {
+//           setMetaLoginStatus("error");
+//           setMetaStatusMessage("Meta connection failed or canceled");
+//           setConnections((prev) => ({ ...prev, meta: false }));
+//         }
+//       },
+//       {
+//         scope:
+//           "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
+//         return_scopes: true,
+//       }
+//     );
+//   }, []);
+
+//   // Launch WhatsApp Embedded Signup
+//   const launchWhatsAppSignup = useCallback(() => {
+//     if (!metaSdkReady) {
+//       setError("Facebook SDK is not ready yet");
+//       return;
+//     }
+
+//     setWhatsappStatus("processing");
+//     setWhatsappStatusMessage("Launching WhatsApp signup...");
+
+//     interface FBLoginResponse {
+//       authResponse?: {
+//         accessToken: string;
+//         expiresIn: number;
+//         signedRequest: string;
+//         userID: string;
+//         grantedScopes?: string;
+//       };
+//       status?: string;
+//     }
+
+//     interface FBLoginExtras {
+//       setup: { payment_method: boolean };
+//       featureType: string;
+//       sessionInfoVersion: string;
+//     }
+
+//     interface FBLoginOptions {
+//       config_id: string;
+//       response_type: string;
+//       scope: string;
+//       override_default_response_type: boolean;
+//       extras: FBLoginExtras;
+//     }
+
+//     window.FB.login(
+//       (response: FBLoginResponse) => {
+//         if (!response.authResponse) {
+//           setWhatsappStatus("error");
+//           setWhatsappStatusMessage("User cancelled the login");
+//         }
+//       },
+//       {
+//         config_id: "643657128126546",
+//         response_type: "code",
+//         scope: "business_management,whatsapp_business_management",
+//         override_default_response_type: true,
+//         extras: {
+//           setup: { payment_method: true },
+//           featureType: "embedded_signup",
+//           sessionInfoVersion: "2",
+//         },
+//       } as FBLoginOptions
+//     );
+//   }, [metaSdkReady]);
+
+//   // Get WhatsApp status icon
+//   const getWhatsAppStatusIcon = () => {
+//     switch (whatsappStatus) {
+//       case "processing":
+//         return <Loader2 className="w-5 h-5 animate-spin" />;
+//       case "success":
+//         return <CheckCircle className="w-5 h-5 text-green-500" />;
+//       case "error":
+//       case "cancelled":
+//         return <AlertCircle className="w-5 h-5 text-red-500" />;
+//       default:
+//         return (
+//           <FaWhatsapp
+//             size={32}
+//             className={
+//               connections.whatsapp ? "text-green-600" : "text-gray-500"
+//             }
+//           />
+//         );
+//     }
+//   };
 
 //   // Update progress bar on step change
 //   useEffect(() => {
@@ -191,39 +574,43 @@
 //   }, [step]);
 
 //   // Handle file uploads
-//   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'udyam' | 'businessProofs') => {
+//   const handleFileUpload = (
+//     e: React.ChangeEvent<HTMLInputElement>,
+//     type: "udyam" | "businessProofs"
+//   ) => {
 //     if (e.target.files) {
 //       const files = Array.from(e.target.files);
-//       setDocuments(prev => ({
+//       setDocuments((prev) => ({
 //         ...prev,
-//         [type]: [...prev[type], ...files]
+//         [type]: [...prev[type], ...files],
 //       }));
 //     }
 //   };
 
 //   // Remove uploaded file
-//   const removeFile = (index: number, type: 'udyam' | 'businessProofs') => {
-//     setDocuments(prev => ({
+//   const removeFile = (index: number, type: "udyam" | "businessProofs") => {
+//     setDocuments((prev) => ({
 //       ...prev,
-//       [type]: prev[type].filter((_, i) => i !== index)
+//       [type]: prev[type].filter((_, i) => i !== index),
 //     }));
 //   };
 
 //   // Toggle selection for questions and keywords
-//   const toggleSelection = (
-//     item: string,
-//     type: 'questions' | 'keywords'
-//   ) => {
-//     const selectedArray = type === 'questions'
-//       ? leadsData.selectedQuestions
-//       : leadsData.selectedKeywords;
+//   const toggleSelection = (item: string, type: "questions" | "keywords") => {
+//     const selectedArray =
+//       type === "questions"
+//         ? leadsData.selectedQuestions
+//         : leadsData.selectedKeywords;
 
-//     const setSelected = type === 'questions'
-//       ? (items: string[]) => setLeadsData(prev => ({ ...prev, selectedQuestions: items }))
-//       : (items: string[]) => setLeadsData(prev => ({ ...prev, selectedKeywords: items }));
+//     const setSelected =
+//       type === "questions"
+//         ? (items: string[]) =>
+//             setLeadsData((prev) => ({ ...prev, selectedQuestions: items }))
+//         : (items: string[]) =>
+//             setLeadsData((prev) => ({ ...prev, selectedKeywords: items }));
 
 //     if (selectedArray.includes(item)) {
-//       setSelected(selectedArray.filter(i => i !== item));
+//       setSelected(selectedArray.filter((i) => i !== item));
 //     } else {
 //       if (selectedArray.length < 3) {
 //         setSelected([...selectedArray, item]);
@@ -231,41 +618,36 @@
 //     }
 //   };
 
-//   // Toggle connection status
-//   const toggleConnection = (platform: 'google' | 'meta' | 'whatsapp') => {
-//     setConnections(prev => ({
-//       ...prev,
-//       [platform]: !prev[platform]
-//     }));
-//   };
-
 //   // Validate current step before proceeding
 //   const validateStep = () => {
 //     switch (step) {
 //       case 1:
-//         return true; // Welcome screen doesn't need validation
+//         return true;
 //       case 2:
 //         if (!industry) {
-//           setError('Please select an industry');
+//           setError("Please select an industry");
 //           return false;
 //         }
 //         return true;
 //       case 3:
-//         return true; // Connections are optional
+//         return true;
 //       case 4:
-//         if (!userDetails.fullName || !userDetails.userName || !userDetails.email) {
-//           setError('Full Name, Username, and Email are required');
+//         if (
+//           !userDetails.fullName ||
+//           !userDetails.userName ||
+//           !userDetails.email
+//         ) {
+//           setError("Full Name, Username, and Email are required");
 //           return false;
 //         }
 //         return true;
 //       case 5:
 //         if (documents.udyam.length === 0) {
-//           setError('Udyam certificate is required');
+//           setError("Udyam certificate is required");
 //           return false;
 //         }
 //         return true;
 //       case 6:
-//         // Leads qualifier is optional - no validation needed
 //         return true;
 //       default:
 //         return true;
@@ -275,7 +657,7 @@
 //   // Handle next step
 //   const handleNext = () => {
 //     if (validateStep()) {
-//       setError('');
+//       setError("");
 //       if (step < 6) {
 //         setStep(step + 1);
 //       } else {
@@ -286,18 +668,17 @@
 
 //   // Handle skip step
 //   const handleSkip = () => {
-//     setError('');
+//     setError("");
 //     if (step < 6) {
 //       setStep(step + 1);
 //     } else {
-//       // For step 6, skip means submit without leads qualifier
 //       submitOnboarding();
 //     }
 //   };
 
 //   // Handle previous step
 //   const handleBack = () => {
-//     setError('');
+//     setError("");
 //     if (step > 1) {
 //       setStep(step - 1);
 //     }
@@ -307,9 +688,8 @@
 //   const uploadFiles = async (files: File[], path: string) => {
 //     const urls = [];
 //     for (const file of files) {
-//       // Generate unique filename with timestamp
 //       const timestamp = Date.now();
-//       const fileExtension = file.name.split('.').pop();
+//       const fileExtension = file.name.split(".").pop();
 //       const uniqueFilename = `${timestamp}.${fileExtension}`;
 
 //       const storageRef = ref(storage, `${path}/${uniqueFilename}`);
@@ -323,24 +703,29 @@
 //   // Final submission
 //   const submitOnboarding = async () => {
 //     setLoading(true);
-//     setError('');
+//     setError("");
 
 //     try {
-//       if (!currentUser?.phoneNumber) throw new Error('User not authenticated');
+//       if (!currentUser?.phoneNumber) throw new Error("User not authenticated");
 
-//       // Clean phone number by removing non-digit characters
-//       const cleanPhone = currentUser.phoneNumber.replace(/\D/g, '');
+//       const cleanPhone = currentUser.phoneNumber.replace(/\D/g, "");
 
 //       // Upload profile picture
-//       let profilePicUrl = '';
+//       let profilePicUrl = "";
 //       if (userDetails.profilePic) {
-//         const storageRef = ref(storage, `profile_pics/${cleanPhone}/${Date.now()}`);
+//         const storageRef = ref(
+//           storage,
+//           `profile_pics/${cleanPhone}/${Date.now()}`
+//         );
 //         await uploadBytes(storageRef, userDetails.profilePic);
 //         profilePicUrl = await getDownloadURL(storageRef);
 //       }
 
 //       // Upload documents
-//       const udyamUrls = await uploadFiles(documents.udyam, `documents/${cleanPhone}/udyam`);
+//       const udyamUrls = await uploadFiles(
+//         documents.udyam,
+//         `documents/${cleanPhone}/udyam`
+//       );
 //       const businessProofUrls = await uploadFiles(
 //         documents.businessProofs,
 //         `documents/${cleanPhone}/business_proofs`
@@ -349,27 +734,46 @@
 //       // Prepare user data
 //       const userData = {
 //         industry,
-//         connections,
+//         connections: {
+//           ...connections,
+//           whatsapp: {
+//             connected: connections.whatsapp,
+//             ...whatsappBusinessAccount,
+//           },
+//         },
 //         userDetails: {
 //           ...userDetails,
-//           profilePic: profilePicUrl
+//           profilePic: profilePicUrl,
 //         },
 //         documents: {
 //           udyam: udyamUrls,
-//           businessProofs: businessProofUrls
+//           businessProofs: businessProofUrls,
 //         },
 //         leadsData: {
 //           ...leadsData,
-//           industryQuestions: industryData[industry as keyof typeof industryData]?.questions || [],
-//           industryKeywords: industryData[industry as keyof typeof industryData]?.keywords || []
+//           industryQuestions:
+//             industryData[industry as keyof typeof industryData]?.questions ||
+//             [],
+//           industryKeywords:
+//             industryData[industry as keyof typeof industryData]?.keywords || [],
 //         },
 //         completed: true,
-//         createdAt: new Date()
+//         createdAt: new Date(),
 //       };
 
 //       // Save to Firestore
-//       const userRef = doc(firestore, 'crm_users', cleanPhone);
+//       const userRef = doc(firestore, "crm_users", cleanPhone);
 //       const onboardingRef = doc(userRef, "Onboarding", "onboardingData");
+
+//       // Store Google access token in main user document
+//       if (googleAccessToken) {
+//         await setDoc(
+//           userRef,
+//           { google_access_token: googleAccessToken },
+//           { merge: true }
+//         );
+//       }
+
 //       await setDoc(onboardingRef, userData);
 
 //       // Refresh onboarding status
@@ -377,10 +781,14 @@
 //         await refreshOnboardingStatus();
 //       }
 
-//       navigate('/dashboard');
+//       navigate("/dashboard");
 //     } catch (err) {
-//       console.error('Onboarding error:', err);
-//       setError(`Failed to complete onboarding: ${(err as Error).message || 'Please try again.'}`);
+//       console.error("Onboarding error:", err);
+//       setError(
+//         `Failed to complete onboarding: ${
+//           (err as Error).message || "Please try again."
+//         }`
+//       );
 //     } finally {
 //       setLoading(false);
 //     }
@@ -401,8 +809,8 @@
 //               Welcome to STARZ Ai CRM
 //             </h1>
 //             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-//               Get started with the most powerful CRM solution tailored for your business.
-//               Complete your onboarding to unlock all features.
+//               Get started with the most powerful CRM solution tailored for your
+//               business. Complete your onboarding to unlock all features.
 //             </p>
 //           </div>
 //         );
@@ -420,8 +828,8 @@
 //                   key={ind}
 //                   className={`p-4 rounded-lg border-2 text-left transition-all ${
 //                     industry === ind
-//                       ? 'border-blue-600 bg-blue-50'
-//                       : 'border-gray-200 hover:border-blue-300'
+//                       ? "border-blue-600 bg-blue-50"
+//                       : "border-gray-200 hover:border-blue-300"
 //                   }`}
 //                   onClick={() => setIndustry(ind)}
 //                 >
@@ -436,104 +844,158 @@
 //         return (
 //           <div className="space-y-8">
 //             <p className="text-gray-600">
-//               Connect your business accounts to enable seamless integration and data synchronization
+//               Connect your business accounts to enable seamless integration and
+//               data synchronization
 //             </p>
 
 //             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 //               {/* Google Connection */}
-//               <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-//                 connections.google
-//                   ? 'border-green-500 bg-green-50'
-//                   : 'border-gray-200 hover:border-blue-300'
-//               }`}>
+//               <div
+//                 className={`border-2 rounded-xl p-6 text-center transition-all ${
+//                   connections.google
+//                     ? "border-green-500 bg-green-50"
+//                     : "border-gray-200 hover:border-blue-300"
+//                 }`}
+//               >
 //                 <div className="flex justify-center mb-4">
-//                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-//                     connections.google ? 'bg-green-100' : 'bg-gray-100'
-//                   }`}>
-//                     <Mail size={32} className={connections.google ? 'text-green-600' : 'text-gray-500'} />
+//                   <div
+//                     className={`w-16 h-16 rounded-full flex items-center justify-center ${
+//                       connections.google ? "bg-green-100" : "bg-gray-100"
+//                     }`}
+//                   >
+//                     {getGoogleStatusIcon()}
 //                   </div>
 //                 </div>
-//                 <h3 className="text-lg font-medium text-gray-800 mb-2">Google Account</h3>
+//                 <h3 className="text-lg font-medium text-gray-800 mb-2">
+//                   Google Account
+//                 </h3>
 //                 <p className="text-sm text-gray-600 mb-4">
 //                   Connect your Google account for email, calendar, and contacts
 //                 </p>
-//                 <button
-//                   type="button"
-//                   className={`px-4 py-2 rounded-lg ${
-//                     connections.google
-//                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
-//                       : 'bg-blue-600 text-white hover:bg-blue-700'
-//                   } transition`}
-//                   onClick={() => toggleConnection('google')}
-//                 >
-//                   {connections.google ? 'Connected ✓' : 'Connect Google'}
-//                 </button>
+//                 {googleLoading ? (
+//                   <div className="text-center py-2">
+//                     <p className="text-sm text-gray-600">
+//                       {googleStatusMessage}
+//                     </p>
+//                   </div>
+//                 ) : (
+//                   <button
+//                     type="button"
+//                     className={`px-4 py-2 rounded-lg ${
+//                       connections.google
+//                         ? "bg-green-100 text-green-700 hover:bg-green-200"
+//                         : "bg-blue-600 text-white hover:bg-blue-700"
+//                     } transition`}
+//                     onClick={() => handleGoogleConnect()}
+//                     disabled={googleLoading}
+//                   >
+//                     {connections.google ? "Connected ✓" : "Connect Google"}
+//                   </button>
+//                 )}
 //               </div>
 
 //               {/* Meta Connection */}
-//               <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-//                 connections.meta
-//                   ? 'border-blue-500 bg-blue-50'
-//                   : 'border-gray-200 hover:border-blue-300'
-//               }`}>
+//               <div
+//                 className={`border-2 rounded-xl p-6 text-center transition-all ${
+//                   connections.meta
+//                     ? "border-blue-500 bg-blue-50"
+//                     : "border-gray-200 hover:border-blue-300"
+//                 }`}
+//               >
 //                 <div className="flex justify-center mb-4">
-//                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-//                     connections.meta ? 'bg-blue-100' : 'bg-gray-100'
-//                   }`}>
-//                     <Share2 size={32} className={connections.meta ? 'text-blue-600' : 'text-gray-500'} />
+//                   <div
+//                     className={`w-16 h-16 rounded-full flex items-center justify-center ${
+//                       connections.meta ? "bg-blue-100" : "bg-gray-100"
+//                     }`}
+//                   >
+//                     <FaFacebook size={32} className="text-gray-500" />
 //                   </div>
 //                 </div>
-//                 <h3 className="text-lg font-medium text-gray-800 mb-2">Meta Business</h3>
+//                 <h3 className="text-lg font-medium text-gray-800 mb-2">
+//                   Facebook Account
+//                 </h3>
 //                 <p className="text-sm text-gray-600 mb-4">
 //                   Connect your Facebook and Instagram business accounts
 //                 </p>
-//                 <button
-//                   type="button"
-//                   className={`px-4 py-2 rounded-lg ${
-//                     connections.meta
-//                       ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-//                       : 'bg-blue-600 text-white hover:bg-blue-700'
-//                   } transition`}
-//                   onClick={() => toggleConnection('meta')}
-//                 >
-//                   {connections.meta ? 'Connected ✓' : 'Connect Meta'}
-//                 </button>
+
+//                 {metaLoginStatus === "processing" ? (
+//                   <div className="text-center py-2">
+//                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
+//                   </div>
+//                 ) : (
+//                   <button
+//                     type="button"
+//                     className={`px-4 py-2 rounded-lg ${
+//                       connections.meta
+//                         ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+//                         : "bg-blue-600 text-white hover:bg-blue-700"
+//                     } transition`}
+//                     onClick={handleMetaLogin}
+//                     disabled={!metaSdkReady || metaLoginStatus === "processing"}
+//                   >
+//                     {connections.meta ? "Connected ✓" : "Connect Meta"}
+//                   </button>
+//                 )}
 //               </div>
 
 //               {/* WhatsApp Connection */}
-//               <div className={`border-2 rounded-xl p-6 text-center transition-all ${
-//                 connections.whatsapp
-//                   ? 'border-green-500 bg-green-50'
-//                   : 'border-gray-200 hover:border-blue-300'
-//               }`}>
+//               <div
+//                 className={`border-2 rounded-xl p-6 text-center transition-all ${
+//                   connections.whatsapp
+//                     ? "border-green-500 bg-green-50"
+//                     : "border-gray-200 hover:border-blue-300"
+//                 }`}
+//               >
 //                 <div className="flex justify-center mb-4">
-//                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-//                     connections.whatsapp ? 'bg-green-100' : 'bg-gray-100'
-//                   }`}>
-//                     <MessageSquare size={32} className={connections.whatsapp ? 'text-green-600' : 'text-gray-500'} />
+//                   <div
+//                     className={`w-16 h-16 rounded-full flex items-center justify-center ${
+//                       connections.whatsapp ? "bg-green-100" : "bg-gray-100"
+//                     }`}
+//                   >
+//                     {getWhatsAppStatusIcon()}
 //                   </div>
 //                 </div>
-//                 <h3 className="text-lg font-medium text-gray-800 mb-2">WhatsApp Business</h3>
+//                 <h3 className="text-lg font-medium text-gray-800 mb-2">
+//                   WhatsApp Business
+//                 </h3>
 //                 <p className="text-sm text-gray-600 mb-4">
 //                   Connect your WhatsApp Business account for messaging
 //                 </p>
-//                 <button
-//                   type="button"
-//                   className={`px-4 py-2 rounded-lg ${
-//                     connections.whatsapp
-//                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
-//                       : 'bg-blue-600 text-white hover:bg-blue-700'
-//                   } transition`}
-//                   onClick={() => toggleConnection('whatsapp')}
-//                 >
-//                   {connections.whatsapp ? 'Connected ✓' : 'Connect WhatsApp'}
-//                 </button>
+
+//                 {whatsappStatus === "processing" ? (
+//                   <div className="text-center py-2">
+//                     <p className="text-sm text-gray-600">
+//                       {whatsappStatusMessage}
+//                     </p>
+//                   </div>
+//                 ) : (
+//                   <button
+//                     type="button"
+//                     className={`px-4 py-2 rounded-lg ${
+//                       connections.whatsapp
+//                         ? "bg-green-100 text-green-700 hover:bg-green-200"
+//                         : "bg-blue-600 text-white hover:bg-blue-700"
+//                     } transition`}
+//                     onClick={launchWhatsAppSignup}
+//                     disabled={whatsappStatus === "processing"}
+//                   >
+//                     {connections.whatsapp ? "Connected ✓" : "Connect WhatsApp"}
+//                   </button>
+//                 )}
+
+//                 {(whatsappStatus === "error" ||
+//                   whatsappStatus === "cancelled") && (
+//                   <p className="text-red-500 text-sm mt-2">
+//                     {whatsappStatusMessage}
+//                   </p>
+//                 )}
 //               </div>
 //             </div>
 
 //             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
 //               <p className="text-sm text-blue-700">
-//                 <span className="font-medium">Note:</span> You can skip this step and connect accounts later in settings.
+//                 <span className="font-medium">Note:</span> You can skip this
+//                 step and connect accounts later.
 //               </p>
 //             </div>
 //           </div>
@@ -569,9 +1031,9 @@
 //                       accept="image/*"
 //                       onChange={(e) => {
 //                         if (e.target.files?.[0]) {
-//                           setUserDetails(prev => ({
+//                           setUserDetails((prev) => ({
 //                             ...prev,
-//                             profilePic: e.target.files![0]
+//                             profilePic: e.target.files![0],
 //                           }));
 //                         }
 //                       }}
@@ -579,86 +1041,17 @@
 //                   </label>
 //                 </div>
 //                 <div>
-//                   <div className="font-medium">Profile Photo</div>
+//                   <div className="font-medium">Business Logo</div>
 //                   <p className="text-sm text-gray-500">JPG, PNG (max 5MB)</p>
 //                 </div>
 //               </div>
 
-//               {/* Basic Info */}
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label className="block text-sm font-medium mb-1">
-//                     Full Name
-//                   </label>
-//                   <input
-//                     type="text"
-//                     value={userDetails.fullName}
-//                     onChange={(e) => setUserDetails(prev => ({ ...prev, fullName: e.target.value }))}
-//                     placeholder="Your full name"
-//                     className="block w-full rounded-lg border px-4 py-3"
-
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label className="block text-sm font-medium mb-1">
-//                     Phone
-//                   </label>
-//                   <input
-//                     type="tel"
-//                     value={userDetails.phone}
-//                     disabled
-//                     className="block w-full rounded-lg border px-4 py-3 bg-gray-100"
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label className="block text-sm font-medium mb-1">
-//                     Email
-//                   </label>
-//                   <input
-//                     type="email"
-//                     value={userDetails.email}
-//                     onChange={(e) => setUserDetails(prev => ({ ...prev, email: e.target.value }))}
-//                     placeholder="Your email address"
-//                     className="block w-full rounded-lg border px-4 py-3"
-
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label className="block text-sm font-medium mb-1">
-//                     Date of Birth
-//                   </label>
-//                   <input
-//                     type="date"
-//                     value={userDetails.dateOfBirth}
-//                     onChange={(e) => setUserDetails(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-//                     className="block w-full rounded-lg border px-4 py-3"
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label className="block text-sm font-medium mb-1">
-//                     Gender (optional)
-//                   </label>
-//                   <select
-//                     value={userDetails.gender}
-//                     onChange={(e) => setUserDetails(prev => ({ ...prev, gender: e.target.value }))}
-//                     className="block w-full rounded-lg border px-4 py-3 bg-white"
-//                   >
-//                     <option value="">Select Gender</option>
-//                     <option value="Male">Male</option>
-//                     <option value="Female">Female</option>
-//                     <option value="Other">Other</option>
-//                     <option value="Prefer not to say">Prefer not to say</option>
-//                   </select>
-//                 </div>
-//               </div>
 
 //               {/* Address */}
 //               <div className="border-t pt-6 mt-6">
-//                 <h3 className="text-lg font-medium text-gray-800 mb-4">Address Information</h3>
+//                 <h3 className="text-lg font-medium text-gray-800 mb-4">
+//                   Address Information
+//                 </h3>
 //                 <div className="grid grid-cols-1 gap-6">
 //                   <div>
 //                     <label className="block text-sm font-medium mb-1">
@@ -667,7 +1060,12 @@
 //                     <input
 //                       type="text"
 //                       value={userDetails.street}
-//                       onChange={(e) => setUserDetails(prev => ({ ...prev, street: e.target.value }))}
+//                       onChange={(e) =>
+//                         setUserDetails((prev) => ({
+//                           ...prev,
+//                           street: e.target.value,
+//                         }))
+//                       }
 //                       placeholder="Your street address"
 //                       className="block w-full rounded-lg border px-4 py-3"
 //                     />
@@ -681,7 +1079,12 @@
 //                       <input
 //                         type="text"
 //                         value={userDetails.city}
-//                         onChange={(e) => setUserDetails(prev => ({ ...prev, city: e.target.value }))}
+//                         onChange={(e) =>
+//                           setUserDetails((prev) => ({
+//                             ...prev,
+//                             city: e.target.value,
+//                           }))
+//                         }
 //                         placeholder="City"
 //                         className="block w-full rounded-lg border px-4 py-3"
 //                       />
@@ -694,7 +1097,12 @@
 //                       <input
 //                         type="text"
 //                         value={userDetails.state}
-//                         onChange={(e) => setUserDetails(prev => ({ ...prev, state: e.target.value }))}
+//                         onChange={(e) =>
+//                           setUserDetails((prev) => ({
+//                             ...prev,
+//                             state: e.target.value,
+//                           }))
+//                         }
 //                         placeholder="State"
 //                         className="block w-full rounded-lg border px-4 py-3"
 //                       />
@@ -707,7 +1115,12 @@
 //                       <input
 //                         type="text"
 //                         value={userDetails.zip}
-//                         onChange={(e) => setUserDetails(prev => ({ ...prev, zip: e.target.value }))}
+//                         onChange={(e) =>
+//                           setUserDetails((prev) => ({
+//                             ...prev,
+//                             zip: e.target.value,
+//                           }))
+//                         }
 //                         placeholder="ZIP"
 //                         className="block w-full rounded-lg border px-4 py-3"
 //                       />
@@ -721,7 +1134,12 @@
 //                     <input
 //                       type="text"
 //                       value={userDetails.country}
-//                       onChange={(e) => setUserDetails(prev => ({ ...prev, country: e.target.value }))}
+//                       onChange={(e) =>
+//                         setUserDetails((prev) => ({
+//                           ...prev,
+//                           country: e.target.value,
+//                         }))
+//                       }
 //                       placeholder="Country"
 //                       className="block w-full rounded-lg border px-4 py-3"
 //                     />
@@ -750,16 +1168,21 @@
 //                 <div className="flex flex-col items-center justify-center">
 //                   <Upload size={24} className="text-gray-400 mb-2" />
 //                   <p className="text-sm text-gray-500">
-//                     <span className="font-medium text-blue-600">Click to upload</span> or drag and drop
+//                     <span className="font-medium text-blue-600">
+//                       Click to upload
+//                     </span>{" "}
+//                     or drag and drop
 //                   </p>
-//                   <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB each)</p>
+//                   <p className="text-xs text-gray-500 mt-1">
+//                     PDF files only (max 10MB each)
+//                   </p>
 //                 </div>
 //                 <input
 //                   type="file"
 //                   className="hidden"
 //                   accept="application/pdf"
 //                   multiple
-//                   onChange={(e) => handleFileUpload(e, 'udyam')}
+//                   onChange={(e) => handleFileUpload(e, "udyam")}
 //                 />
 //               </label>
 
@@ -767,10 +1190,15 @@
 //               {documents.udyam.length > 0 && (
 //                 <div className="mt-4 space-y-2">
 //                   {documents.udyam.map((file, index) => (
-//                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+//                     <div
+//                       key={index}
+//                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+//                     >
 //                       <div className="flex items-center">
 //                         <FileText size={18} className="text-gray-500 mr-2" />
-//                         <span className="text-sm truncate max-w-xs">{file.name}</span>
+//                         <span className="text-sm truncate max-w-xs">
+//                           {file.name}
+//                         </span>
 //                         <span className="text-xs text-gray-500 ml-2">
 //                           {(file.size / 1024 / 1024).toFixed(2)}MB
 //                         </span>
@@ -778,7 +1206,7 @@
 //                       <button
 //                         type="button"
 //                         className="text-red-500 hover:text-red-700"
-//                         onClick={() => removeFile(index, 'udyam')}
+//                         onClick={() => removeFile(index, "udyam")}
 //                       >
 //                         <X size={18} />
 //                       </button>
@@ -799,16 +1227,21 @@
 //                 <div className="flex flex-col items-center justify-center">
 //                   <Upload size={24} className="text-gray-400 mb-2" />
 //                   <p className="text-sm text-gray-500">
-//                     <span className="font-medium text-blue-600">Click to upload</span> or drag and drop
+//                     <span className="font-medium text-blue-600">
+//                       Click to upload
+//                     </span>{" "}
+//                     or drag and drop
 //                   </p>
-//                   <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB each)</p>
+//                   <p className="text-xs text-gray-500 mt-1">
+//                     PDF files only (max 10MB each)
+//                   </p>
 //                 </div>
 //                 <input
 //                   type="file"
 //                   className="hidden"
 //                   accept="application/pdf"
 //                   multiple
-//                   onChange={(e) => handleFileUpload(e, 'businessProofs')}
+//                   onChange={(e) => handleFileUpload(e, "businessProofs")}
 //                 />
 //               </label>
 
@@ -816,10 +1249,15 @@
 //               {documents.businessProofs.length > 0 && (
 //                 <div className="mt-4 space-y-2">
 //                   {documents.businessProofs.map((file, index) => (
-//                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+//                     <div
+//                       key={index}
+//                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+//                     >
 //                       <div className="flex items-center">
 //                         <FileText size={18} className="text-gray-500 mr-2" />
-//                         <span className="text-sm truncate max-w-xs">{file.name}</span>
+//                         <span className="text-sm truncate max-w-xs">
+//                           {file.name}
+//                         </span>
 //                         <span className="text-xs text-gray-500 ml-2">
 //                           {(file.size / 1024 / 1024).toFixed(2)}MB
 //                         </span>
@@ -827,7 +1265,7 @@
 //                       <button
 //                         type="button"
 //                         className="text-red-500 hover:text-red-700"
-//                         onClick={() => removeFile(index, 'businessProofs')}
+//                         onClick={() => removeFile(index, "businessProofs")}
 //                       >
 //                         <X size={18} />
 //                       </button>
@@ -840,7 +1278,8 @@
 //         );
 
 //       case 6:
-//         const currentIndustryData = industryData[industry as keyof typeof industryData];
+//         const currentIndustryData =
+//           industryData[industry as keyof typeof industryData];
 
 //         return (
 //           <div className="space-y-8">
@@ -860,15 +1299,15 @@
 //                     type="button"
 //                     className={`p-4 rounded-lg border text-left transition-all ${
 //                       leadsData.selectedQuestions.includes(question)
-//                         ? 'border-blue-600 bg-blue-50'
-//                         : 'border-gray-200 hover:border-blue-300'
+//                         ? "border-blue-600 bg-blue-50"
+//                         : "border-gray-200 hover:border-blue-300"
 //                     } ${
 //                       leadsData.selectedQuestions.length >= 3 &&
 //                       !leadsData.selectedQuestions.includes(question)
-//                         ? 'opacity-50 cursor-not-allowed'
-//                         : 'cursor-pointer'
+//                         ? "opacity-50 cursor-not-allowed"
+//                         : "cursor-pointer"
 //                     }`}
-//                     onClick={() => toggleSelection(question, 'questions')}
+//                     onClick={() => toggleSelection(question, "questions")}
 //                     disabled={
 //                       leadsData.selectedQuestions.length >= 3 &&
 //                       !leadsData.selectedQuestions.includes(question)
@@ -876,7 +1315,10 @@
 //                   >
 //                     <div className="flex items-start">
 //                       {leadsData.selectedQuestions.includes(question) ? (
-//                         <Check className="text-blue-600 mt-0.5 mr-2 flex-shrink-0" size={18} />
+//                         <Check
+//                           className="text-blue-600 mt-0.5 mr-2 flex-shrink-0"
+//                           size={18}
+//                         />
 //                       ) : (
 //                         <div className="w-5 h-5 rounded-full border border-gray-300 mr-2 mt-0.5 flex-shrink-0" />
 //                       )}
@@ -902,7 +1344,12 @@
 //                 <input
 //                   type="text"
 //                   value={leadsData.location}
-//                   onChange={(e) => setLeadsData(prev => ({ ...prev, location: e.target.value }))}
+//                   onChange={(e) =>
+//                     setLeadsData((prev) => ({
+//                       ...prev,
+//                       location: e.target.value,
+//                     }))
+//                   }
 //                   placeholder="Enter target location (city, state, or region)"
 //                   className="pl-10 block w-full rounded-lg border px-4 py-3"
 //                 />
@@ -921,15 +1368,15 @@
 //                     type="button"
 //                     className={`px-4 py-2 rounded-full border transition-all ${
 //                       leadsData.selectedKeywords.includes(keyword)
-//                         ? 'border-blue-600 bg-blue-50 text-blue-700'
-//                         : 'border-gray-200 text-gray-700 hover:border-blue-300'
+//                         ? "border-blue-600 bg-blue-50 text-blue-700"
+//                         : "border-gray-200 text-gray-700 hover:border-blue-300"
 //                     } ${
 //                       leadsData.selectedKeywords.length >= 3 &&
 //                       !leadsData.selectedKeywords.includes(keyword)
-//                         ? 'opacity-50 cursor-not-allowed'
-//                         : 'cursor-pointer'
+//                         ? "opacity-50 cursor-not-allowed"
+//                         : "cursor-pointer"
 //                     }`}
-//                     onClick={() => toggleSelection(keyword, 'keywords')}
+//                     onClick={() => toggleSelection(keyword, "keywords")}
 //                     disabled={
 //                       leadsData.selectedKeywords.length >= 3 &&
 //                       !leadsData.selectedKeywords.includes(keyword)
@@ -951,7 +1398,9 @@
 //               </h3>
 //               <textarea
 //                 value={leadsData.usp}
-//                 onChange={(e) => setLeadsData(prev => ({ ...prev, usp: e.target.value }))}
+//                 onChange={(e) =>
+//                   setLeadsData((prev) => ({ ...prev, usp: e.target.value }))
+//                 }
 //                 placeholder="What makes your business unique? (Max 200 characters)"
 //                 className="block w-full rounded-lg border px-4 py-3 min-h-[120px]"
 //                 maxLength={200}
@@ -983,13 +1432,13 @@
 //           {/* Step Header */}
 //           <div className="mb-6">
 //             <p className="text-sm text-gray-500">Step {step} of 6</p>
-//             <h2 className="text-xl font-bold text-gray-800">{stepTitles[step-1]}</h2>
+//             <h2 className="text-xl font-bold text-gray-800">
+//               {stepTitles[step - 1]}
+//             </h2>
 //           </div>
 
 //           {/* Step Content */}
-//           <div className="mb-8">
-//             {renderStep()}
-//           </div>
+//           <div className="mb-8">{renderStep()}</div>
 
 //           {/* Error Message */}
 //           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -1028,12 +1477,28 @@
 //                 disabled={loading}
 //                 className="flex items-center px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
 //               >
-//                 {step === 6 ? 'Complete Setup' : 'Next Step'}
+//                 {step === 6 ? "Complete Setup" : "Next Step"}
 //                 {step < 6 && <ArrowRight size={18} className="ml-2" />}
 //                 {loading && (
-//                   <svg className="animate-spin -mr-1 ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-//                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-//                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+//                   <svg
+//                     className="animate-spin -mr-1 ml-2 h-4 w-4 text-white"
+//                     xmlns="http://www.w3.org/2000/svg"
+//                     fill="none"
+//                     viewBox="0 0 24 24"
+//                   >
+//                     <circle
+//                       className="opacity-25"
+//                       cx="12"
+//                       cy="12"
+//                       r="10"
+//                       stroke="currentColor"
+//                       strokeWidth="4"
+//                     ></circle>
+//                     <path
+//                       className="opacity-75"
+//                       fill="currentColor"
+//                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+//                     ></path>
 //                   </svg>
 //                 )}
 //               </button>
@@ -1054,24 +1519,14 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Extend the Window interface to include fbAsyncInit for Facebook SDK
 declare global {
   interface Window {
     fbAsyncInit?: () => void;
     FB: any;
     gapi: any;
+    initMap?: () => void;
+    google: typeof google;
   }
 }
 
@@ -1290,11 +1745,11 @@ const Onboarding = () => {
     email: "",
     dateOfBirth: "",
     gender: "",
-    street: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "",
+    location: {
+      address: "",
+      lat: 0,
+      lng: 0,
+    },
   });
   const [documents, setDocuments] = useState({
     udyam: [] as File[],
@@ -1338,8 +1793,14 @@ const Onboarding = () => {
   >("idle");
   const [whatsappStatusMessage, setWhatsappStatusMessage] = useState("");
 
-  // Google API loading ref
-  const googleApiLoadPromise = useRef<Promise<void> | null>(null);
+  // Google Maps states
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [marker, setMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [mapError, setMapError] = useState("");
+  const mapScriptLoaded = useRef(false);
 
   // Initialize Facebook SDK
   useEffect(() => {
@@ -1378,45 +1839,163 @@ const Onboarding = () => {
     initFacebookSdk();
   }, []);
 
-  // Ensure Google API is loaded and ready
-  const ensureGoogleApiLoaded = useCallback(() => {
-    if (googleApiLoadPromise.current) {
-      return googleApiLoadPromise.current;
-    }
+  // Initialize Google Maps - Fixed implementation
+  useEffect(() => {
+    if (step !== 4) return;
+    if (!mapRef.current) return;
 
-    googleApiLoadPromise.current = new Promise<void>((resolve, reject) => {
-      // Check if already loaded
-      if (window.gapi && window.gapi.load) {
-        resolve();
-        return;
+    let isMounted = true;
+    let geolocationWatchId: number | null = null;
+
+    const initMap = () => {
+      setMapLoading(true);
+      setMapError("");
+
+      const defaultCenter = new google.maps.LatLng(28.6139, 77.2090);
+      
+      if (navigator.geolocation) {
+        geolocationWatchId = navigator.geolocation.watchPosition(
+          (position) => {
+            if (!isMounted) return;
+            const userLocation = new google.maps.LatLng(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            createMap(userLocation);
+          },
+          () => {
+            if (!isMounted) return;
+            createMap(defaultCenter);
+          },
+          { timeout: 5000 }
+        );
+      } else {
+        createMap(defaultCenter);
       }
+    };
 
-      // Create script element
+    const createMap = (center: google.maps.LatLng) => {
+      try {
+        if (!mapRef.current || !isMounted) {
+          setMapLoading(false);
+          return;
+        }
+
+        const mapInstance = new google.maps.Map(mapRef.current, {
+          center,
+          zoom: 15,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          streetViewControl: false,
+          fullscreenControl: true,
+        });
+
+        const markerInstance = new google.maps.Marker({
+          position: center,
+          map: mapInstance,
+          draggable: true,
+          title: "Drag to set your business location",
+        });
+
+        const geocoderInstance = new google.maps.Geocoder();
+
+        updateLocation(center, geocoderInstance);
+
+        markerInstance.addListener("dragend", () => {
+          const newPosition = markerInstance.getPosition();
+          if (newPosition) updateLocation(newPosition, geocoderInstance);
+        });
+
+        mapInstance.addListener("click", (e: google.maps.MapMouseEvent) => {
+          if (e.latLng) {
+            markerInstance.setPosition(e.latLng);
+            updateLocation(e.latLng, geocoderInstance);
+          }
+        });
+
+        setMap(mapInstance);
+        setMarker(markerInstance);
+        setGeocoder(geocoderInstance);
+        setMapLoading(false);
+
+        setTimeout(() => {
+          google.maps.event.trigger(mapInstance, "resize");
+        }, 100);
+      } catch (err) {
+        console.error("Map creation error:", err);
+        if (isMounted) {
+          setMapError("Failed to create map. Please try again.");
+          setMapLoading(false);
+        }
+      }
+    };
+
+    const updateLocation = (
+      location: google.maps.LatLng,
+      geocoder: google.maps.Geocoder
+    ) => {
+      if (!isMounted) return;
+      geocoder.geocode({ location }, (results, status) => {
+        if (!isMounted) return;
+        if (status === "OK" && results?.[0]) {
+          const address = results[0].formatted_address;
+          setUserDetails((prev) => ({
+            ...prev,
+            location: {
+              address,
+              lat: location.lat(),
+              lng: location.lng(),
+            },
+          }));
+        } else {
+          setMapError("Could not find address for this location");
+        }
+      });
+    };
+
+    const loadScript = () => {
       const script = document.createElement("script");
-      script.src = "https://apis.google.com/js/platform.js";
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${
+        import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY
+      }`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        // Wait for gapi to be available with retries
-        const checkGapi = (retries = 20, delay = 100) => {
-          if (window.gapi && window.gapi.load) {
-            resolve();
-          } else if (retries > 0) {
-            setTimeout(() => checkGapi(retries - 1, delay), delay);
-          } else {
-            reject(new Error("Google API failed to load"));
-          }
-        };
-        checkGapi();
+        if (!isMounted) return;
+        mapScriptLoaded.current = true;
+        if (window.google && window.google.maps) {
+          initMap();
+        } else {
+          setMapError("Failed to load Google Maps. Please try again.");
+          setMapLoading(false);
+        }
       };
       script.onerror = () => {
-        reject(new Error("Failed to load Google API"));
+        if (!isMounted) return;
+        setMapError("Failed to load Google Maps. Please try again.");
+        setMapLoading(false);
       };
-      document.body.appendChild(script);
-    });
+      document.head.appendChild(script);
+    };
 
-    return googleApiLoadPromise.current;
-  }, []);
+    if (mapScriptLoaded.current) {
+      initMap();
+    } else if (window.google && window.google.maps) {
+      mapScriptLoaded.current = true;
+      initMap();
+    } else {
+      loadScript();
+    }
+
+    return () => {
+      isMounted = false;
+      if (geolocationWatchId !== null) {
+        navigator.geolocation.clearWatch(geolocationWatchId);
+      }
+      if (marker) {
+        marker.setMap(null);
+      }
+    };
+  }, [step]);
 
   // Add WhatsApp message listener
   useEffect(() => {
@@ -1703,9 +2282,10 @@ const Onboarding = () => {
         if (
           !userDetails.fullName ||
           !userDetails.userName ||
-          !userDetails.email
+          !userDetails.email ||
+          !userDetails.location.address
         ) {
-          setError("Full Name, Username, and Email are required");
+          setError("Full Name, Username, Email, and Location are required");
           return false;
         }
         return true;
@@ -2109,199 +2689,47 @@ const Onboarding = () => {
                   </label>
                 </div>
                 <div>
-                  <div className="font-medium">Profile Photo</div>
+                  <div className="font-medium">Business Logo</div>
                   <p className="text-sm text-gray-500">JPG, PNG (max 5MB)</p>
                 </div>
               </div>
 
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={userDetails.fullName}
-                    onChange={(e) =>
-                      setUserDetails((prev) => ({
-                        ...prev,
-                        fullName: e.target.value,
-                      }))
-                    }
-                    placeholder="Your full name"
-                    className="block w-full rounded-lg border px-4 py-3"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    value={userDetails.phone}
-                    disabled
-                    className="block w-full rounded-lg border px-4 py-3 bg-gray-100"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={userDetails.email}
-                    onChange={(e) =>
-                      setUserDetails((prev) => ({
-                        ...prev,
-                        email: e.target.value,
-                      }))
-                    }
-                    placeholder="Your email address"
-                    className="block w-full rounded-lg border px-4 py-3"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    value={userDetails.dateOfBirth}
-                    onChange={(e) =>
-                      setUserDetails((prev) => ({
-                        ...prev,
-                        dateOfBirth: e.target.value,
-                      }))
-                    }
-                    className="block w-full rounded-lg border px-4 py-3"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Gender (optional)
-                  </label>
-                  <select
-                    value={userDetails.gender}
-                    onChange={(e) =>
-                      setUserDetails((prev) => ({
-                        ...prev,
-                        gender: e.target.value,
-                      }))
-                    }
-                    className="block w-full rounded-lg border px-4 py-3 bg-white"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Address */}
+              {/* Location Map */}
               <div className="border-t pt-6 mt-6">
                 <h3 className="text-lg font-medium text-gray-800 mb-4">
-                  Address Information
+                  Business Location
                 </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Street Address
-                    </label>
-                    <input
-                      type="text"
-                      value={userDetails.street}
-                      onChange={(e) =>
-                        setUserDetails((prev) => ({
-                          ...prev,
-                          street: e.target.value,
-                        }))
-                      }
-                      placeholder="Your street address"
-                      className="block w-full rounded-lg border px-4 py-3"
+                <p className="text-sm text-gray-600 mb-4">
+                  Drag the marker to your business location
+                </p>
+
+                {mapLoading ? (
+                  <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <p className="ml-3 text-gray-600">Loading map...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      ref={mapRef}
+                      className="w-full h-96 rounded-lg overflow-hidden border border-gray-300"
                     />
+                    {mapError && (
+                      <p className="text-red-500 text-sm mt-2">{mapError}</p>
+                    )}
+                  </>
+                )}
+
+                {userDetails.location.address && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-700">
+                      Selected Address:
+                    </p>
+                    <p className="text-gray-900 mt-1">
+                      {userDetails.location.address}
+                    </p>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        value={userDetails.city}
-                        onChange={(e) =>
-                          setUserDetails((prev) => ({
-                            ...prev,
-                            city: e.target.value,
-                          }))
-                        }
-                        placeholder="City"
-                        className="block w-full rounded-lg border px-4 py-3"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        value={userDetails.state}
-                        onChange={(e) =>
-                          setUserDetails((prev) => ({
-                            ...prev,
-                            state: e.target.value,
-                          }))
-                        }
-                        placeholder="State"
-                        className="block w-full rounded-lg border px-4 py-3"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        ZIP Code
-                      </label>
-                      <input
-                        type="text"
-                        value={userDetails.zip}
-                        onChange={(e) =>
-                          setUserDetails((prev) => ({
-                            ...prev,
-                            zip: e.target.value,
-                          }))
-                        }
-                        placeholder="ZIP"
-                        className="block w-full rounded-lg border px-4 py-3"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      value={userDetails.country}
-                      onChange={(e) =>
-                        setUserDetails((prev) => ({
-                          ...prev,
-                          country: e.target.value,
-                        }))
-                      }
-                      placeholder="Country"
-                      className="block w-full rounded-lg border px-4 py-3"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -2434,7 +2862,7 @@ const Onboarding = () => {
           </div>
         );
 
-      case 6:
+      case 6: {
         const currentIndustryData =
           industryData[industry as keyof typeof industryData];
 
@@ -2566,8 +2994,9 @@ const Onboarding = () => {
                 {leadsData.usp.length}/200
               </p>
             </div>
-          </div>
-        );
+            </div>
+          );
+        }
 
       default:
         return null;
@@ -2668,3 +3097,6 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
+
+

@@ -14,8 +14,6 @@ import {
   FaChevronRight,
   FaPlus,
   FaEye,
-  // FaTrash,
-  // FaEdit,
   FaSearch,
   FaChevronDown,
   FaTimes,
@@ -24,12 +22,12 @@ import {
 } from "react-icons/fa";
 import { SyncLoader } from "react-spinners";
 import { useCustomerType } from "../../context/CustomerTypeContext";
+import { fetchLeads } from "../../services/api";
+import { Lead } from "../../types";
 
 const WhatsAppCampaign = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedCustomerType, setSelectedCustomerType] = useState<
-    string | null
-  >(null);
+  const [selectedCustomerType, setSelectedCustomerType] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -49,18 +47,51 @@ const WhatsAppCampaign = () => {
   const [templateError, setTemplateError] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [previewedTemplate, setPreviewedTemplate] =
-    useState<WhatsAppTemplate | null>(null);
+  const [previewedTemplate, setPreviewedTemplate] = useState<WhatsAppTemplate | null>(null);
 
-  const { getLeadsByType } = useCustomerType();
+  const { customerTypes } = useCustomerType();
+  const [allLeads, setAllLeads] = useState<Lead[]>([]);
+  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
+
+  // Fetch all leads
+  useEffect(() => {
+    const fetchAllLeads = async () => {
+      try {
+        setIsLoadingLeads(true);
+        const leads = await fetchLeads();
+        setAllLeads(leads);
+      } catch (error) {
+        console.error("Failed to fetch leads:", error);
+      } finally {
+        setIsLoadingLeads(false);
+      }
+    };
+    
+    fetchAllLeads();
+  }, []);
+
+  // Filter leads based on selected customer type
+  useEffect(() => {
+    if (!selectedCustomerType) {
+      setFilteredLeads([]);
+      return;
+    }
+
+    const filtered = allLeads.filter(lead => {
+      const type = customerTypes[lead.id!];
+      return type === selectedCustomerType;
+    });
+
+    setFilteredLeads(filtered);
+  }, [selectedCustomerType, customerTypes, allLeads]);
 
   // Get lead counts by type
-  const basicLeads = getLeadsByType("Basic");
-  const advanceLeads = getLeadsByType("Advance");
-  const proLeads = getLeadsByType("Pro");
+  const basicLeads = allLeads.filter(lead => customerTypes[lead.id!] === "Basic");
+  const advanceLeads = allLeads.filter(lead => customerTypes[lead.id!] === "Advance");
+  const proLeads = allLeads.filter(lead => customerTypes[lead.id!] === "Pro");
 
   // Customer type options
-  const customerTypes = [
+  const customerTypesOptions = [
     { id: "Basic", name: "Basic Customers", count: basicLeads.length },
     { id: "Advance", name: "Advance Customers", count: advanceLeads.length },
     { id: "Pro", name: "Pro Customers", count: proLeads.length },
@@ -73,7 +104,7 @@ const WhatsAppCampaign = () => {
   ];
 
   // Filter types based on search
-  const filteredTypes = customerTypes.filter((type) =>
+  const filteredTypes = customerTypesOptions.filter((type) =>
     type.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -92,15 +123,6 @@ const WhatsAppCampaign = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-  // Simulate loading
-  useEffect(() => {
-    setIsLoadingLeads(true);
-    const timer = setTimeout(() => {
-      setIsLoadingLeads(false);
-    }, 1500);
-    return () => clearTimeout(timer);
   }, []);
 
   // Fetch WhatsApp templates
@@ -130,13 +152,13 @@ const WhatsAppCampaign = () => {
       console.error("Failed to fetch templates", error);
 
       // Handle specific errors
-      if (error.message.includes("No WABA connected")) {
+      if (error instanceof Error && error.message.includes("No WABA connected")) {
         setConnectionError(
           "No WhatsApp Business Account connected. Please connect a WABA in settings."
         );
       } else if (
-        error.message.includes("User document not found") ||
-        error.message.includes("Failed to initialize")
+        error instanceof Error && (error.message.includes("User document not found") ||
+        error.message.includes("Failed to initialize"))
       ) {
         setConnectionError("Account setup incomplete. Please contact support.");
       } else {
@@ -184,8 +206,7 @@ const WhatsAppCampaign = () => {
 
   const getSelectedLeadCount = () => {
     if (!selectedCustomerType) return 0;
-    const type = customerTypes.find((t) => t.id === selectedCustomerType);
-    return type ? type.count : 0;
+    return filteredLeads.length;
   };
 
   const getSelectedTemplate = () => {
@@ -317,7 +338,7 @@ const WhatsAppCampaign = () => {
                     <span className="text-gray-600">Customer Type:</span>
                     <span className="font-medium">
                       {selectedCustomerType
-                        ? customerTypes.find(
+                        ? customerTypesOptions.find(
                             (t) => t.id === selectedCustomerType
                           )?.name
                         : "Not selected"}
@@ -392,7 +413,7 @@ const WhatsAppCampaign = () => {
                           >
                             <span className="truncate">
                               {selectedCustomerType
-                                ? customerTypes.find(
+                                ? customerTypesOptions.find(
                                     (t) => t.id === selectedCustomerType
                                   )?.name
                                 : "Select customer type"}
@@ -488,7 +509,7 @@ const WhatsAppCampaign = () => {
                             <div className="flex justify-between items-center">
                               <p className="font-medium">
                                 {
-                                  customerTypes.find(
+                                  customerTypesOptions.find(
                                     (t) => t.id === selectedCustomerType
                                   )?.name
                                 }
@@ -720,7 +741,7 @@ const WhatsAppCampaign = () => {
                             <div>
                               <p className="font-bold text-lg">
                                 {
-                                  customerTypes.find(
+                                  customerTypesOptions.find(
                                     (t) => t.id === selectedCustomerType
                                   )?.name
                                 }
@@ -1032,20 +1053,6 @@ const WhatsAppCampaign = () => {
                         </div>
                       )}
                   </div>
-
-                  {/* Message Tail (sharp corner) */}
-                  {/* <div
-                    className="absolute left-[-8px] top-0 w-4 h-4 bg-[#dcf8c6] z-0"
-                    style={{
-                      clipPath: "polygon(0 0, 100% 0, 0 100%)",
-                    }}
-                  ></div> */}
-                  {/* <div
-                    className="absolute -left-[6px] top-3 w-3 h-3 bg-[#dcf8c6] z-0 rotate-45"
-                    style={{
-                      borderRadius: "0 0 0 2px",
-                    }}
-                  ></div> */}
                 </div>
 
                 {/* Disclaimer */}

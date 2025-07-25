@@ -2508,9 +2508,11 @@ const Onboarding = () => {
             access_token: selectedPage.access_token
           }),
         }
+        
       );
 
       const data = await response.json();
+      console.log(data);
 
       if (data.success) {
         setAccessStatus("Partner access granted successfully!");
@@ -3539,3 +3541,5 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
+

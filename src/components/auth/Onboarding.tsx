@@ -1843,7 +1843,7 @@
 
 
 
-// Extend the Window interface to include fbAsyncInit for Facebook SDK
+// src/components/auth/Onboarding.tsx
 declare global {
   interface Window {
     fbAsyncInit?: () => void;
@@ -2037,7 +2037,6 @@ const industryData = {
   },
 };
 
-// Step titles for header
 const stepTitles = [
   "Welcome",
   "Select Your Industry",
@@ -2047,7 +2046,6 @@ const stepTitles = [
   "Leads Qualifier",
 ];
 
-// Facebook API version constant
 const FB_API_VERSION = "v22.0";
 
 const Onboarding = () => {
@@ -2058,7 +2056,6 @@ const Onboarding = () => {
   const { currentUser, refreshOnboardingStatus } = useAuth();
   const navigate = useNavigate();
 
-  // Initialize Firebase Storage
   const storage = getStorage(app);
 
   // Form state
@@ -2097,9 +2094,7 @@ const Onboarding = () => {
   // Google connection states
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleStatusMessage, setGoogleStatusMessage] = useState("");
-  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(
-    null
-  );
+  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
 
   // WhatsApp Business Account details
   const [whatsappBusinessAccount, setWhatsappBusinessAccount] = useState<{
@@ -2129,7 +2124,7 @@ const Onboarding = () => {
   const [mapError, setMapError] = useState("");
   const mapScriptLoaded = useRef(false);
 
-  // New states for partner access
+  // Partner access states
   const [pages, setPages] = useState<Array<{ id: string; name: string; access_token: string }>>([]);
   const [selectedPage, setSelectedPage] = useState<{ id: string; access_token: string } | null>(null);
   const [grantingAccess, setGrantingAccess] = useState(false);
@@ -2140,7 +2135,6 @@ const Onboarding = () => {
   // Initialize Facebook SDK
   useEffect(() => {
     const initFacebookSdk = () => {
-      // Check if SDK is already loaded
       if (window.FB) {
         setMetaSdkReady(true);
         return;
@@ -2156,7 +2150,6 @@ const Onboarding = () => {
         setMetaSdkReady(true);
       };
 
-      // Load SDK only once
       if (!document.getElementById("facebook-jssdk")) {
         const script = document.createElement("script");
         script.id = "facebook-jssdk";
@@ -2380,8 +2373,6 @@ const Onboarding = () => {
     scope: "https://www.googleapis.com/auth/business.manage",
     onSuccess: (tokenResponse) => {
       const accessToken = tokenResponse.access_token;
-
-      // Save access token and update UI
       setGoogleAccessToken(accessToken);
       setConnections((prev) => ({ ...prev, google: true }));
       setGoogleStatusMessage("Google connected successfully!");
@@ -2405,7 +2396,7 @@ const Onboarding = () => {
     );
   };
 
-  // Handle Meta login - Updated to fetch pages
+  // Handle Meta login with partner access
   const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
     setMetaStatusMessage("Connecting to Meta...");
@@ -2448,7 +2439,7 @@ const Onboarding = () => {
             }
           );
 
-          // Fetch user's pages after successful login
+          // Fetch user's pages
           window.FB.api(
             "/me/accounts",
             { access_token: userAccessToken },
@@ -2503,16 +2494,14 @@ const Onboarding = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            business: "949040750500917",
+            business: "949040750500917", // Our business ID
             permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
             access_token: selectedPage.access_token
           }),
         }
-        
       );
 
       const data = await response.json();
-      console.log(data);
 
       if (data.success) {
         setAccessStatus("Partner access granted successfully!");
@@ -2936,7 +2925,7 @@ const Onboarding = () => {
                   Connect your Facebook and Instagram business accounts
                 </p>
 
-                {metaLoginStatus === "processing" ? (
+                {/* {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
                   </div>
@@ -3004,6 +2993,98 @@ const Onboarding = () => {
                       <div className="text-center">
                         <p className="text-sm text-gray-600">
                           No pages found for your account
+                        </p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Granted scopes: {grantedScopes}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {metaStatusMessage}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      connections.meta
+                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    } transition`}
+                    onClick={handleMetaLogin}
+                    disabled={!metaSdkReady || metaLoginStatus === "processing"}
+                  >
+                    Connect Meta
+                  </button>
+                )} */}
+                {metaLoginStatus === "processing" ? (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-gray-600">{metaStatusMessage}</p>
+                  </div>
+                ) : connections.meta ? (
+                  <div className="space-y-4">
+                    {pages.length > 0 ? (
+                      <>
+                        <div className="text-left">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Select a Business Page
+                          </label>
+                          <select
+                            className="w-full p-2 border rounded"
+                            value={selectedPage?.id || ""}
+                            onChange={(e) => {
+                              const pageId = e.target.value;
+                              const page = pages.find(p => p.id === pageId);
+                              if (page) {
+                                setSelectedPage({
+                                  id: page.id,
+                                  access_token: page.access_token
+                                });
+                              }
+                            }}
+                          >
+                            {pages.map(page => (
+                              <option key={page.id} value={page.id}>
+                                {page.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <button
+                          type="button"
+                          className={`w-full px-4 py-2 rounded-lg ${
+                            grantingAccess
+                              ? "bg-blue-300 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700"
+                          } text-white transition`}
+                          onClick={grantPartnerAccess}
+                          disabled={grantingAccess}
+                        >
+                          {grantingAccess ? (
+                            <span className="flex items-center justify-center">
+                              <Loader2 className="animate-spin mr-2" size={16} />
+                              Granting Access...
+                            </span>
+                          ) : (
+                            "Grant Partner Access"
+                          )}
+                        </button>
+                        
+                        {accessStatus && (
+                          <p className={`text-sm ${
+                            accessStatus.includes("success") 
+                              ? "text-green-600" 
+                              : "text-red-500"
+                          }`}>
+                            {accessStatus}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">
+                          No business pages found
                         </p>
                         <p className="text-xs text-gray-500 mt-2">
                           Granted scopes: {grantedScopes}

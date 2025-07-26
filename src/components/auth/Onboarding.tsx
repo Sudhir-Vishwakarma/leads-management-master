@@ -1,4 +1,3 @@
-// // Extend the Window interface to include fbAsyncInit for Facebook SDK
 // declare global {
 //   interface Window {
 //     fbAsyncInit?: () => void;
@@ -192,7 +191,6 @@
 //   },
 // };
 
-// // Step titles for header
 // const stepTitles = [
 //   "Welcome",
 //   "Select Your Industry",
@@ -202,6 +200,8 @@
 //   "Leads Qualifier",
 // ];
 
+// const FB_API_VERSION = "v22.0";
+
 // const Onboarding = () => {
 //   const [step, setStep] = useState(1);
 //   const [loading, setLoading] = useState(false);
@@ -210,7 +210,6 @@
 //   const { currentUser, refreshOnboardingStatus } = useAuth();
 //   const navigate = useNavigate();
 
-//   // Initialize Firebase Storage
 //   const storage = getStorage(app);
 
 //   // Form state
@@ -249,9 +248,7 @@
 //   // Google connection states
 //   const [googleLoading, setGoogleLoading] = useState(false);
 //   const [googleStatusMessage, setGoogleStatusMessage] = useState("");
-//   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(
-//     null
-//   );
+//   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
 
 //   // WhatsApp Business Account details
 //   const [whatsappBusinessAccount, setWhatsappBusinessAccount] = useState<{
@@ -281,17 +278,17 @@
 //   const [mapError, setMapError] = useState("");
 //   const mapScriptLoaded = useRef(false);
 
-//   // New states for partner access
+//   // Partner access states
 //   const [pages, setPages] = useState<Array<{ id: string; name: string; access_token: string }>>([]);
 //   const [selectedPage, setSelectedPage] = useState<{ id: string; access_token: string } | null>(null);
 //   const [grantingAccess, setGrantingAccess] = useState(false);
 //   const [accessStatus, setAccessStatus] = useState('');
+//   const [grantedScopes, setGrantedScopes] = useState('');
 
 
 //   // Initialize Facebook SDK
 //   useEffect(() => {
 //     const initFacebookSdk = () => {
-//       // Check if SDK is already loaded
 //       if (window.FB) {
 //         setMetaSdkReady(true);
 //         return;
@@ -302,12 +299,11 @@
 //           appId: "2446058352452818",
 //           cookie: true,
 //           xfbml: true,
-//           version: "v22.0",
+//           version: FB_API_VERSION,
 //         });
 //         setMetaSdkReady(true);
 //       };
 
-//       // Load SDK only once
 //       if (!document.getElementById("facebook-jssdk")) {
 //         const script = document.createElement("script");
 //         script.id = "facebook-jssdk";
@@ -531,8 +527,6 @@
 //     scope: "https://www.googleapis.com/auth/business.manage",
 //     onSuccess: (tokenResponse) => {
 //       const accessToken = tokenResponse.access_token;
-
-//       // Save access token and update UI
 //       setGoogleAccessToken(accessToken);
 //       setConnections((prev) => ({ ...prev, google: true }));
 //       setGoogleStatusMessage("Google connected successfully!");
@@ -556,73 +550,7 @@
 //     );
 //   };
 
-//   // // Handle Meta login
-//   // const handleMetaLogin = useCallback(() => {
-//   //   setMetaLoginStatus("processing");
-//   //   setMetaStatusMessage("Connecting to Meta...");
-
-//   //   window.FB.login(
-//   //     (response: {
-//   //       authResponse?: {
-//   //         accessToken: string;
-//   //         expiresIn: number;
-//   //         signedRequest: string;
-//   //         userID: string;
-//   //         grantedScopes?: string;
-//   //       };
-//   //       status?: string;
-//   //     }) => {
-//   //       if (response.authResponse) {
-//   //         setMetaLoginStatus("success");
-//   //         setMetaStatusMessage("Connected to Meta!");
-//   //         setConnections((prev) => ({ ...prev, meta: true }));
-
-//   //         // Get user info
-//   //         interface FBUserPictureData {
-//   //           url?: string;
-//   //         }
-
-//   //         interface FBUserPicture {
-//   //           data?: FBUserPictureData;
-//   //         }
-
-//   //         interface FBUserResponse {
-//   //           name?: string;
-//   //           email?: string;
-//   //           picture?: FBUserPicture;
-//   //           error?: any;
-//   //         }
-
-//   //         window.FB.api(
-//   //           "/me",
-//   //           { fields: "name,email,picture" },
-//   //           (userResponse: FBUserResponse) => {
-//   //             if (userResponse && !userResponse.error) {
-//   //               setUserDetails((prev) => ({
-//   //                 ...prev,
-//   //                 fullName: userResponse.name || prev.fullName,
-//   //                 email: userResponse.email || prev.email,
-//   //                 ...(userResponse.picture?.data?.url && {
-//   //                   profilePicUrl: userResponse.picture.data.url,
-//   //                 }),
-//   //               }));
-//   //             }
-//   //           }
-//   //         );
-//   //       } else {
-//   //         setMetaLoginStatus("error");
-//   //         setMetaStatusMessage("Meta connection failed or canceled");
-//   //         setConnections((prev) => ({ ...prev, meta: false }));
-//   //       }
-//   //     },
-//   //     {
-//   //       scope:
-//   //         "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval",
-//   //       return_scopes: true,
-//   //     }
-//   //   );
-//   // }, []);
-//   // Handle Meta login - Updated to fetch pages
+//   // Handle Meta login with partner access
 //   const handleMetaLogin = useCallback(() => {
 //     setMetaLoginStatus("processing");
 //     setMetaStatusMessage("Connecting to Meta...");
@@ -640,31 +568,18 @@
 //       }) => {
 //         if (response.authResponse) {
 //           const userAccessToken = response.authResponse.accessToken;
+//           const scopes = response.authResponse.grantedScopes || '';
+//           setGrantedScopes(scopes);
           
 //           setMetaLoginStatus("success");
 //           setMetaStatusMessage("Connected to Meta!");
 //           setConnections((prev) => ({ ...prev, meta: true }));
 
 //           // Get user info
-//           interface FBUserPictureData {
-//             url?: string;
-//           }
-
-//           interface FBUserPicture {
-//             data?: FBUserPictureData;
-//           }
-
-//           interface FBUserResponse {
-//             name?: string;
-//             email?: string;
-//             picture?: FBUserPicture;
-//             error?: any;
-//           }
-
 //           window.FB.api(
 //             "/me",
 //             { fields: "name,email,picture" },
-//             (userResponse: FBUserResponse) => {
+//             (userResponse: any) => {
 //               if (userResponse && !userResponse.error) {
 //                 setUserDetails((prev) => ({
 //                   ...prev,
@@ -678,11 +593,11 @@
 //             }
 //           );
 
-//           // Fetch user's pages after successful login
+//           // Fetch user's pages
 //           window.FB.api(
 //             "/me/accounts",
 //             { access_token: userAccessToken },
-//             (pagesResponse: { data?: Array<{ id: string; name: string; access_token: string }>; error?: any }) => {
+//             (pagesResponse: any) => {
 //               if (pagesResponse.data) {
 //                 setPages(pagesResponse.data);
 //                 if (pagesResponse.data.length > 0) {
@@ -690,10 +605,13 @@
 //                     id: pagesResponse.data[0].id,
 //                     access_token: pagesResponse.data[0].access_token
 //                   });
+//                   setMetaStatusMessage(`Found ${pagesResponse.data.length} pages`);
+//                 } else {
+//                   setMetaStatusMessage("No pages found for your account");
 //                 }
 //               } else if (pagesResponse.error) {
 //                 console.error("Error fetching pages:", pagesResponse.error);
-//                 setMetaStatusMessage("Connected but failed to fetch pages");
+//                 setMetaStatusMessage(`Error: ${pagesResponse.error.message || "Failed to fetch pages"}`);
 //               }
 //             }
 //           );
@@ -722,18 +640,18 @@
 //     setAccessStatus("Granting partner access...");
 
 //     try {
-//       const formData = new URLSearchParams();
-//       formData.append("business", "949040750500917");
-//       formData.append("permitted_tasks", JSON.stringify(['MANAGE', 'ADVERTISE', 'ANALYZE']));
-
 //       const response = await fetch(
-//         `https://graph.facebook.com/v22.0/${selectedPage.id}/agencies`,
+//         `https://graph.facebook.com/${FB_API_VERSION}/${selectedPage.id}/agencies`,
 //         {
 //           method: "POST",
 //           headers: {
-//             Authorization: `Bearer ${selectedPage.access_token}`,
+//             "Content-Type": "application/json",
 //           },
-//           body: formData,
+//           body: JSON.stringify({
+//             business: "949040750500917", // Our business ID
+//             permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
+//             access_token: selectedPage.access_token
+//           }),
 //         }
 //       );
 
@@ -741,17 +659,16 @@
 
 //       if (data.success) {
 //         setAccessStatus("Partner access granted successfully!");
-//         // Update connections to mark partner access as completed
 //         setConnections(prev => ({
 //           ...prev,
 //           meta: true
 //         }));
 //       } else {
-//         setAccessStatus(`Error: ${data.error?.message || "Unknown error"}`);
+//         setAccessStatus(`Error: ${data.error?.message || JSON.stringify(data)}`);
 //       }
-//     } catch (error) {
+//     } catch (error: any) {
 //       console.error("Partner access error:", error);
-//       setAccessStatus("Failed to grant partner access. Please try again.");
+//       setAccessStatus(`Failed: ${error.message || "Please try again."}`);
 //     } finally {
 //       setGrantingAccess(false);
 //     }
@@ -768,33 +685,8 @@
 //     setWhatsappStatus("processing");
 //     setWhatsappStatusMessage("Launching WhatsApp signup...");
 
-//     interface FBLoginResponse {
-//       authResponse?: {
-//         accessToken: string;
-//         expiresIn: number;
-//         signedRequest: string;
-//         userID: string;
-//         grantedScopes?: string;
-//       };
-//       status?: string;
-//     }
-
-//     interface FBLoginExtras {
-//       setup: { payment_method: boolean };
-//       featureType: string;
-//       sessionInfoVersion: string;
-//     }
-
-//     interface FBLoginOptions {
-//       config_id: string;
-//       response_type: string;
-//       scope: string;
-//       override_default_response_type: boolean;
-//       extras: FBLoginExtras;
-//     }
-
 //     window.FB.login(
-//       (response: FBLoginResponse) => {
+//       (response: any) => {
 //         if (!response.authResponse) {
 //           setWhatsappStatus("error");
 //           setWhatsappStatusMessage("User cancelled the login");
@@ -810,7 +702,7 @@
 //           featureType: "embedded_signup",
 //           sessionInfoVersion: "2",
 //         },
-//       } as FBLoginOptions
+//       }
 //     );
 //   }, [metaSdkReady]);
 
@@ -1191,24 +1083,6 @@
 //                   <div className="text-center py-2">
 //                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
 //                   </div>
-//                 ) : (
-//                   <button
-//                     type="button"
-//                     className={`px-4 py-2 rounded-lg ${
-//                       connections.meta
-//                         ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-//                         : "bg-blue-600 text-white hover:bg-blue-700"
-//                     } transition`}
-//                     onClick={handleMetaLogin}
-//                     disabled={!metaSdkReady || metaLoginStatus === "processing"}
-//                   >
-//                     {connections.meta ? "Connected ✓" : "Connect Meta"}
-//                   </button>
-//                 )} */}
-//                 {metaLoginStatus === "processing" ? (
-//                   <div className="text-center py-2">
-//                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
-//                   </div>
 //                 ) : connections.meta ? (
 //                   <div className="space-y-4">
 //                     {pages.length > 0 ? (
@@ -1270,9 +1144,109 @@
 //                         )}
 //                       </>
 //                     ) : (
-//                       <p className="text-sm text-gray-600">
-//                         No pages found for your account
-//                       </p>
+//                       <div className="text-center">
+//                         <p className="text-sm text-gray-600">
+//                           No pages found for your account
+//                         </p>
+//                         <p className="text-xs text-gray-500 mt-2">
+//                           Granted scopes: {grantedScopes}
+//                         </p>
+//                         <p className="text-xs text-gray-500">
+//                           {metaStatusMessage}
+//                         </p>
+//                       </div>
+//                     )}
+//                   </div>
+//                 ) : (
+//                   <button
+//                     type="button"
+//                     className={`px-4 py-2 rounded-lg ${
+//                       connections.meta
+//                         ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+//                         : "bg-blue-600 text-white hover:bg-blue-700"
+//                     } transition`}
+//                     onClick={handleMetaLogin}
+//                     disabled={!metaSdkReady || metaLoginStatus === "processing"}
+//                   >
+//                     Connect Meta
+//                   </button>
+//                 )} */}
+//                 {metaLoginStatus === "processing" ? (
+//                   <div className="text-center py-2">
+//                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
+//                   </div>
+//                 ) : connections.meta ? (
+//                   <div className="space-y-4">
+//                     {pages.length > 0 ? (
+//                       <>
+//                         <div className="text-left">
+//                           <label className="block text-sm font-medium text-gray-700 mb-1">
+//                             Select a Business Page
+//                           </label>
+//                           <select
+//                             className="w-full p-2 border rounded"
+//                             value={selectedPage?.id || ""}
+//                             onChange={(e) => {
+//                               const pageId = e.target.value;
+//                               const page = pages.find(p => p.id === pageId);
+//                               if (page) {
+//                                 setSelectedPage({
+//                                   id: page.id,
+//                                   access_token: page.access_token
+//                                 });
+//                               }
+//                             }}
+//                           >
+//                             {pages.map(page => (
+//                               <option key={page.id} value={page.id}>
+//                                 {page.name}
+//                               </option>
+//                             ))}
+//                           </select>
+//                         </div>
+                        
+//                         <button
+//                           type="button"
+//                           className={`w-full px-4 py-2 rounded-lg ${
+//                             grantingAccess
+//                               ? "bg-blue-300 cursor-not-allowed"
+//                               : "bg-blue-600 hover:bg-blue-700"
+//                           } text-white transition`}
+//                           onClick={grantPartnerAccess}
+//                           disabled={grantingAccess}
+//                         >
+//                           {grantingAccess ? (
+//                             <span className="flex items-center justify-center">
+//                               <Loader2 className="animate-spin mr-2" size={16} />
+//                               Granting Access...
+//                             </span>
+//                           ) : (
+//                             "Grant Partner Access"
+//                           )}
+//                         </button>
+                        
+//                         {accessStatus && (
+//                           <p className={`text-sm ${
+//                             accessStatus.includes("success") 
+//                               ? "text-green-600" 
+//                               : "text-red-500"
+//                           }`}>
+//                             {accessStatus}
+//                           </p>
+//                         )}
+//                       </>
+//                     ) : (
+//                       <div className="text-center">
+//                         <p className="text-sm text-gray-600">
+//                           No business pages found
+//                         </p>
+//                         <p className="text-xs text-gray-500 mt-2">
+//                           Granted scopes: {grantedScopes}
+//                         </p>
+//                         <p className="text-xs text-gray-500">
+//                           {metaStatusMessage}
+//                         </p>
+//                       </div>
 //                     )}
 //                   </div>
 //                 ) : (
@@ -1843,7 +1817,37 @@
 
 
 
-// src/components/auth/Onboarding.tsx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 declare global {
   interface Window {
     fbAsyncInit?: () => void;
@@ -2047,6 +2051,7 @@ const stepTitles = [
 ];
 
 const FB_API_VERSION = "v22.0";
+const PARTNER_BUSINESS_ID = "949040750500917"; // Your partner business ID
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -2396,6 +2401,84 @@ const Onboarding = () => {
     );
   };
 
+  // // Handle Meta login with partner access
+  // const handleMetaLogin = useCallback(() => {
+  //   setMetaLoginStatus("processing");
+  //   setMetaStatusMessage("Connecting to Meta...");
+
+  //   window.FB.login(
+  //     (response: {
+  //       authResponse?: {
+  //         accessToken: string;
+  //         expiresIn: number;
+  //         signedRequest: string;
+  //         userID: string;
+  //         grantedScopes?: string;
+  //       };
+  //       status?: string;
+  //     }) => {
+  //       if (response.authResponse) {
+  //         const userAccessToken = response.authResponse.accessToken;
+  //         const scopes = response.authResponse.grantedScopes || '';
+  //         setGrantedScopes(scopes);
+          
+  //         setMetaLoginStatus("success");
+  //         setMetaStatusMessage("Connected to Meta!");
+  //         setConnections((prev) => ({ ...prev, meta: true }));
+
+  //         // Get user info
+  //         window.FB.api(
+  //           "/me",
+  //           { fields: "name,email,picture" },
+  //           (userResponse: any) => {
+  //             if (userResponse && !userResponse.error) {
+  //               setUserDetails((prev) => ({
+  //                 ...prev,
+  //                 fullName: userResponse.name || prev.fullName,
+  //                 email: userResponse.email || prev.email,
+  //                 ...(userResponse.picture?.data?.url && {
+  //                   profilePicUrl: userResponse.picture.data.url,
+  //                 }),
+  //               }));
+  //             }
+  //           }
+  //         );
+
+  //         // Fetch user's pages
+  //         window.FB.api(
+  //           "/me/accounts",
+  //           { access_token: userAccessToken },
+  //           (pagesResponse: any) => {
+  //             if (pagesResponse.data) {
+  //               setPages(pagesResponse.data);
+  //               if (pagesResponse.data.length > 0) {
+  //                 setSelectedPage({
+  //                   id: pagesResponse.data[0].id,
+  //                   access_token: pagesResponse.data[0].access_token
+  //                 });
+  //                 setMetaStatusMessage(`Found ${pagesResponse.data.length} pages`);
+  //               } else {
+  //                 setMetaStatusMessage("No pages found for your account");
+  //               }
+  //             } else if (pagesResponse.error) {
+  //               console.error("Error fetching pages:", pagesResponse.error);
+  //               setMetaStatusMessage(`Error: ${pagesResponse.error.message || "Failed to fetch pages"}`);
+  //             }
+  //           }
+  //         );
+  //       } else {
+  //         setMetaLoginStatus("error");
+  //         setMetaStatusMessage("Meta connection failed or canceled");
+  //         setConnections((prev) => ({ ...prev, meta: false }));
+  //       }
+  //     },
+  //     {
+  //       scope:
+  //         "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management",
+  //       return_scopes: true,
+  //     }
+  //   );
+  // }, []);
   // Handle Meta login with partner access
   const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
@@ -2442,18 +2525,24 @@ const Onboarding = () => {
           // Fetch user's pages
           window.FB.api(
             "/me/accounts",
-            { access_token: userAccessToken },
+            { access_token: userAccessToken, fields: "id,name,access_token,business" },
             (pagesResponse: any) => {
               if (pagesResponse.data) {
-                setPages(pagesResponse.data);
-                if (pagesResponse.data.length > 0) {
+                // Filter only business-owned pages
+                const businessPages = pagesResponse.data.filter(
+                  (page: any) => page.business
+                );
+                
+                setPages(businessPages);
+                
+                if (businessPages.length > 0) {
                   setSelectedPage({
-                    id: pagesResponse.data[0].id,
-                    access_token: pagesResponse.data[0].access_token
+                    id: businessPages[0].id,
+                    access_token: businessPages[0].access_token
                   });
-                  setMetaStatusMessage(`Found ${pagesResponse.data.length} pages`);
+                  setMetaStatusMessage(`Found ${businessPages.length} business pages`);
                 } else {
-                  setMetaStatusMessage("No pages found for your account");
+                  setMetaStatusMessage("No business pages found for your account");
                 }
               } else if (pagesResponse.error) {
                 console.error("Error fetching pages:", pagesResponse.error);
@@ -2469,13 +2558,59 @@ const Onboarding = () => {
       },
       {
         scope:
-          "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management",
+          "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management,pages_manage_metadata,pages_manage_engagement",
         return_scopes: true,
       }
     );
   }, []);
 
-  // Grant partner access to selected page
+
+
+  // // Grant partner access to selected page
+  // const grantPartnerAccess = useCallback(async () => {
+  //   if (!selectedPage) {
+  //     setAccessStatus("No page selected");
+  //     return;
+  //   }
+
+  //   setGrantingAccess(true);
+  //   setAccessStatus("Granting partner access...");
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://graph.facebook.com/${FB_API_VERSION}/${selectedPage.id}/agencies`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           business: "949040750500917", // Our business ID
+  //           permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
+  //           access_token: selectedPage.access_token
+  //         }),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (data.success) {
+  //       setAccessStatus("Partner access granted successfully!");
+  //       setConnections(prev => ({
+  //         ...prev,
+  //         meta: true
+  //       }));
+  //     } else {
+  //       setAccessStatus(`Error: ${data.error?.message || JSON.stringify(data)}`);
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Partner access error:", error);
+  //     setAccessStatus(`Failed: ${error.message || "Please try again."}`);
+  //   } finally {
+  //     setGrantingAccess(false);
+  //   }
+  // }, [selectedPage]);
+    // Grant partner access to selected page
   const grantPartnerAccess = useCallback(async () => {
     if (!selectedPage) {
       setAccessStatus("No page selected");
@@ -2494,7 +2629,7 @@ const Onboarding = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            business: "949040750500917", // Our business ID
+            business: PARTNER_BUSINESS_ID,
             permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
             access_token: selectedPage.access_token
           }),
@@ -2509,6 +2644,12 @@ const Onboarding = () => {
           ...prev,
           meta: true
         }));
+        
+        // Automatically proceed to next step
+        setTimeout(() => {
+          setStep(prev => prev + 1);
+          setAccessStatus('');
+        }, 2000);
       } else {
         setAccessStatus(`Error: ${data.error?.message || JSON.stringify(data)}`);
       }
@@ -2925,99 +3066,8 @@ const Onboarding = () => {
                   Connect your Facebook and Instagram business accounts
                 </p>
 
+                
                 {/* {metaLoginStatus === "processing" ? (
-                  <div className="text-center py-2">
-                    <p className="text-sm text-gray-600">{metaStatusMessage}</p>
-                  </div>
-                ) : connections.meta ? (
-                  <div className="space-y-4">
-                    {pages.length > 0 ? (
-                      <>
-                        <div className="text-left">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Select a Page
-                          </label>
-                          <select
-                            className="w-full p-2 border rounded"
-                            value={selectedPage?.id || ""}
-                            onChange={(e) => {
-                              const pageId = e.target.value;
-                              const page = pages.find(p => p.id === pageId);
-                              if (page) {
-                                setSelectedPage({
-                                  id: page.id,
-                                  access_token: page.access_token
-                                });
-                              }
-                            }}
-                          >
-                            {pages.map(page => (
-                              <option key={page.id} value={page.id}>
-                                {page.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <button
-                          type="button"
-                          className={`w-full px-4 py-2 rounded-lg ${
-                            grantingAccess
-                              ? "bg-blue-300 cursor-not-allowed"
-                              : "bg-blue-600 hover:bg-blue-700"
-                          } text-white transition`}
-                          onClick={grantPartnerAccess}
-                          disabled={grantingAccess}
-                        >
-                          {grantingAccess ? (
-                            <span className="flex items-center justify-center">
-                              <Loader2 className="animate-spin mr-2" size={16} />
-                              Granting Access...
-                            </span>
-                          ) : (
-                            "Grant Partner Access"
-                          )}
-                        </button>
-                        
-                        {accessStatus && (
-                          <p className={`text-sm ${
-                            accessStatus.includes("success") 
-                              ? "text-green-600" 
-                              : "text-red-500"
-                          }`}>
-                            {accessStatus}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600">
-                          No pages found for your account
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Granted scopes: {grantedScopes}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {metaStatusMessage}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-lg ${
-                      connections.meta
-                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    } transition`}
-                    onClick={handleMetaLogin}
-                    disabled={!metaSdkReady || metaLoginStatus === "processing"}
-                  >
-                    Connect Meta
-                  </button>
-                )} */}
-                {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
                   </div>
@@ -3108,7 +3158,102 @@ const Onboarding = () => {
                   >
                     Connect Meta
                   </button>
+                )} */}
+                {metaLoginStatus === "processing" ? (
+              <div className="text-center py-2">
+                <p className="text-sm text-gray-600">{metaStatusMessage}</p>
+              </div>
+            ) : connections.meta ? (
+              <div className="space-y-4">
+                {pages.length > 0 ? (
+                  <>
+                    <div className="text-left">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select Business Page
+                      </label>
+                      <select
+                        className="w-full p-2 border rounded"
+                        value={selectedPage?.id || ""}
+                        onChange={(e) => {
+                          const pageId = e.target.value;
+                          const page = pages.find(p => p.id === pageId);
+                          if (page) {
+                            setSelectedPage({
+                              id: page.id,
+                              access_token: page.access_token
+                            });
+                          }
+                        }}
+                      >
+                        {pages.map(page => (
+                          <option key={page.id} value={page.id}>
+                            {page.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      className={`w-full px-4 py-2 rounded-lg ${
+                        grantingAccess
+                          ? "bg-blue-300 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      } text-white transition`}
+                      onClick={grantPartnerAccess}
+                      disabled={grantingAccess}
+                    >
+                      {grantingAccess ? (
+                        <span className="flex items-center justify-center">
+                          <Loader2 className="animate-spin mr-2" size={16} />
+                          Granting Access...
+                        </span>
+                      ) : (
+                        "Grant Partner Access"
+                      )}
+                    </button>
+                    
+                    {accessStatus && (
+                      <p className={`text-sm ${
+                        accessStatus.includes("success") 
+                          ? "text-green-600" 
+                          : accessStatus.includes("Error") 
+                            ? "text-red-500"
+                            : "text-gray-700"
+                      }`}>
+                        {accessStatus}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">
+                      No business pages found
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Please ensure your pages are connected to a business
+                    </p>
+                  </div>
                 )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={`px-4 py-2 rounded-lg ${
+                  connections.meta
+                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                } transition`}
+                onClick={handleMetaLogin}
+                disabled={!metaSdkReady || metaLoginStatus === "processing"}
+              >
+                Connect Meta
+              </button>
+            )}
+
+
+
+
               </div>
 
               {/* WhatsApp Connection */}
@@ -3622,5 +3767,7 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
+
 
 

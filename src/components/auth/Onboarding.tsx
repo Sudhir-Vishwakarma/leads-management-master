@@ -1978,7 +1978,9 @@ const stepTitles = [
 ];
 
 const FB_API_VERSION = "v22.0";
-const PARTNER_BUSINESS_ID = "949040750500917"; // Your partner business ID
+const PARTNER_BUSINESS_ID =
+  import.meta.env.VITE_PARTNER_BM_ID || "949040750500917";
+const PARTNER_ADMIN_TOKEN = import.meta.env.VITE_PARTNER_ADMIN_TOKEN || "";
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -2042,6 +2044,7 @@ const Onboarding = () => {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [metaStatusMessage, setMetaStatusMessage] = useState("");
+  const [userAccessToken, setUserAccessToken] = useState("");
 
   // WhatsApp SDK states
   const [whatsappStatus, setWhatsappStatus] = useState<
@@ -2071,7 +2074,7 @@ const Onboarding = () => {
   const [accessStatus, setAccessStatus] = useState("");
   const [grantedScopes, setGrantedScopes] = useState("");
 
-  // Initialize Facebook SDK
+    // Initialize Facebook SDK
   useEffect(() => {
     const initFacebookSdk = () => {
       if (window.FB) {
@@ -2081,7 +2084,7 @@ const Onboarding = () => {
 
       window.fbAsyncInit = function () {
         window.FB.init({
-          appId: "2446058352452818",
+          appId: import.meta.env.VITE_FACEBOOK_APP_ID || "2446058352452818",
           cookie: true,
           xfbml: true,
           version: FB_API_VERSION,
@@ -2414,7 +2417,7 @@ const Onboarding = () => {
   //   );
   // }, []);
 
-  // Handle Meta login with partner access
+  // Handle Meta login
   const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
     setMetaStatusMessage("Connecting to Meta...");
@@ -2432,6 +2435,7 @@ const Onboarding = () => {
       }) => {
         if (response.authResponse) {
           const userAccessToken = response.authResponse.accessToken;
+          setUserAccessToken(userAccessToken);
           const scopes = response.authResponse.grantedScopes || "";
           setGrantedScopes(scopes);
 
@@ -2566,16 +2570,20 @@ const Onboarding = () => {
     setAccessStatus("Granting partner access...");
 
     try {
-      // Prepare form data
-      const formData = new FormData();
-      formData.append("business", PARTNER_BUSINESS_ID);
-      formData.append("permitted_tasks", '["MANAGE", "ADVERTISE", "ANALYZE"]');
-
+      // Prepare the request
       const response = await fetch(
-        `https://graph.facebook.com/${FB_API_VERSION}/${selectedPage.id}/agencies?access_token=${selectedPage.access_token}`,
+        `https://graph.facebook.com/${FB_API_VERSION}/${selectedPage.id}/agencies`,
         {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${PARTNER_ADMIN_TOKEN}`,
+          },
+          body: JSON.stringify({
+            business: PARTNER_BUSINESS_ID,
+            permitted_tasks: ["MANAGE", "ADVERTISE", "ANALYZE"],
+            access_token: userAccessToken,
+          }),
         }
       );
 
@@ -2596,6 +2604,13 @@ const Onboarding = () => {
       } else {
         const errorMsg = data.error?.message || JSON.stringify(data);
         setAccessStatus(`Error: ${errorMsg}`);
+        
+        // Handle specific errors
+        if (data.error?.code === 2556) {
+          setAccessStatus("Partner access already granted");
+          setConnections((prev) => ({ ...prev, meta: true }));
+          setTimeout(() => setStep((prev) => prev + 1), 1000);
+        }
       }
     } catch (error: any) {
       console.error("Partner access error:", error);
@@ -2603,7 +2618,7 @@ const Onboarding = () => {
     } finally {
       setGrantingAccess(false);
     }
-  }, [selectedPage]);
+  }, [selectedPage, userAccessToken]);
 
   // Launch WhatsApp Embedded Signup
   const launchWhatsAppSignup = useCallback(() => {
@@ -2885,6 +2900,106 @@ const Onboarding = () => {
     }
   };
 
+  // Render Meta connection UI
+  const renderMetaConnection = () => {
+    if (metaLoginStatus === "processing") {
+      return (
+        <div className="text-center py-2">
+          <p className="text-sm text-gray-600">{metaStatusMessage}</p>
+        </div>
+      );
+    } else if (connections.meta) {
+      return (
+        <div className="space-y-4">
+          {pages.length > 0 ? (
+            <>
+              <div className="text-left">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Business Page
+                </label>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={selectedPage?.id || ""}
+                  onChange={(e) => {
+                    const pageId = e.target.value;
+                    const page = pages.find((p) => p.id === pageId);
+                    if (page) {
+                      setSelectedPage({
+                        id: page.id,
+                        access_token: page.access_token,
+                      });
+                    }
+                  }}
+                >
+                  {pages.map((page) => (
+                    <option key={page.id} value={page.id}>
+                      {page.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                className={`w-full px-4 py-2 rounded-lg ${
+                  grantingAccess
+                    ? "bg-blue-300 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                } text-white transition`}
+                onClick={grantPartnerAccess}
+                disabled={grantingAccess}
+              >
+                {grantingAccess ? (
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="animate-spin mr-2" size={16} />
+                    Granting Access...
+                  </span>
+                ) : (
+                  "Grant Partner Access"
+                )}
+              </button>
+
+              {accessStatus && (
+                <p
+                  className={`text-sm ${
+                    accessStatus.includes("success") || 
+                    accessStatus.includes("already")
+                      ? "text-green-600"
+                      : "text-red-500"
+                  }`}
+                >
+                  {accessStatus}
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="text-center">
+              <p className="text-sm text-gray-600">No business pages found</p>
+              <p className="text-xs text-gray-500 mt-2">
+                Please ensure your pages are connected to a business
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    } else {
+      return (
+        <button
+          type="button"
+          className={`px-4 py-2 rounded-lg ${
+            connections.meta
+              ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          } transition`}
+          onClick={handleMetaLogin}
+          disabled={!metaSdkReady || metaLoginStatus === "processing"}
+        >
+          Connect Meta
+        </button>
+      );
+    }
+  };
+
   // Render current step
   const renderStep = () => {
     switch (step) {
@@ -3008,6 +3123,7 @@ const Onboarding = () => {
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Facebook and Instagram business accounts
                 </p>
+                
 
                 {/* {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
@@ -3101,102 +3217,7 @@ const Onboarding = () => {
                     Connect Meta
                   </button>
                 )} */}
-                {metaLoginStatus === "processing" ? (
-                  <div className="text-center py-2">
-                    <p className="text-sm text-gray-600">{metaStatusMessage}</p>
-                  </div>
-                ) : connections.meta ? (
-                  <div className="space-y-4">
-                    {pages.length > 0 ? (
-                      <>
-                        <div className="text-left">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Select Business Page
-                          </label>
-                          <select
-                            className="w-full p-2 border rounded"
-                            value={selectedPage?.id || ""}
-                            onChange={(e) => {
-                              const pageId = e.target.value;
-                              const page = pages.find((p) => p.id === pageId);
-                              if (page) {
-                                setSelectedPage({
-                                  id: page.id,
-                                  access_token: page.access_token,
-                                });
-                              }
-                            }}
-                          >
-                            {pages.map((page) => (
-                              <option key={page.id} value={page.id}>
-                                {page.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <button
-                          type="button"
-                          className={`w-full px-4 py-2 rounded-lg ${
-                            grantingAccess
-                              ? "bg-blue-300 cursor-not-allowed"
-                              : "bg-blue-600 hover:bg-blue-700"
-                          } text-white transition`}
-                          onClick={grantPartnerAccess}
-                          disabled={grantingAccess}
-                        >
-                          {grantingAccess ? (
-                            <span className="flex items-center justify-center">
-                              <Loader2
-                                className="animate-spin mr-2"
-                                size={16}
-                              />
-                              Granting Access...
-                            </span>
-                          ) : (
-                            "Grant Partner Access"
-                          )}
-                        </button>
-
-                        {accessStatus && (
-                          <p
-                            className={`text-sm ${
-                              accessStatus.includes("success")
-                                ? "text-green-600"
-                                : accessStatus.includes("Error")
-                                ? "text-red-500"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {accessStatus}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600">
-                          No business pages found
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Please ensure your pages are connected to a business
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-lg ${
-                      connections.meta
-                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    } transition`}
-                    onClick={handleMetaLogin}
-                    disabled={!metaSdkReady || metaLoginStatus === "processing"}
-                  >
-                    Connect Meta
-                  </button>
-                )}
+                {renderMetaConnection()}
               </div>
 
               {/* WhatsApp Connection */}

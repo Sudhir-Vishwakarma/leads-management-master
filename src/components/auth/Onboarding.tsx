@@ -604,10 +604,13 @@ const Onboarding = () => {
       });
     };
 
+
+    // AIzaSyDmzDIeYZ2uxW1L317vDrWJ3zxEP8WB5ps
     const loadScript = () => {
-     const apiKey = import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY || "";
+    //  const apiKey = import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY || "";
+    const apiKey = `AIzaSyDmzDIeYZ2uxW1L317vDrWJ3zxEP8WB5ps`;
       if (!apiKey) {
-        setMapError("Google Maps API key is missing");
+        setMapError("Google Maps API key is missing or invalid");
         setMapLoading(false);
         return;
       }

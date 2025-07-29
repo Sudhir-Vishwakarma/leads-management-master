@@ -275,7 +275,7 @@ const Onboarding = () => {
   >("idle");
   const [whatsappStatusMessage, setWhatsappStatusMessage] = useState("");
 
-  // Google Maps states
+  // Google Maps states - UPDATED
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [marker, setMarker] =
@@ -297,7 +297,7 @@ const Onboarding = () => {
   const [accessStatus, setAccessStatus] = useState("");
   const [grantedScopes, setGrantedScopes] = useState("");
 
-    // Initialize Facebook SDK
+  // Initialize Facebook SDK
   useEffect(() => {
     const initFacebookSdk = () => {
       if (window.FB) {
@@ -332,7 +332,165 @@ const Onboarding = () => {
     initFacebookSdk();
   }, []);
 
-  // Initialize Google Maps - Fixed implementation
+  // // Initialize Google Maps - Fixed implementation
+  // useEffect(() => {
+  //   if (step !== 4) return;
+  //   if (!mapRef.current) return;
+
+  //   let isMounted = true;
+  //   let geolocationWatchId: number | null = null;
+
+  //   const initMap = () => {
+  //     setMapLoading(true);
+  //     setMapError("");
+
+  //     const defaultCenter = new google.maps.LatLng(28.6139, 77.209);
+
+  //     if (navigator.geolocation) {
+  //       geolocationWatchId = navigator.geolocation.watchPosition(
+  //         (position) => {
+  //           if (!isMounted) return;
+  //           const userLocation = new google.maps.LatLng(
+  //             position.coords.latitude,
+  //             position.coords.longitude
+  //           );
+  //           createMap(userLocation);
+  //         },
+  //         () => {
+  //           if (!isMounted) return;
+  //           createMap(defaultCenter);
+  //         },
+  //         { timeout: 5000 }
+  //       );
+  //     } else {
+  //       createMap(defaultCenter);
+  //     }
+  //   };
+
+  //   const createMap = (center: google.maps.LatLng) => {
+  //     try {
+  //       if (!mapRef.current || !isMounted) {
+  //         setMapLoading(false);
+  //         return;
+  //       }
+
+  //       const mapInstance = new google.maps.Map(mapRef.current, {
+  //         center,
+  //         zoom: 15,
+  //         mapTypeId: google.maps.MapTypeId.ROADMAP,
+  //         streetViewControl: false,
+  //         fullscreenControl: true,
+  //       });
+
+  //       const markerInstance = new google.maps.Marker({
+  //         position: center,
+  //         map: mapInstance,
+  //         draggable: true,
+  //         title: "Drag to set your business location",
+  //       });
+
+  //       const geocoderInstance = new google.maps.Geocoder();
+
+  //       updateLocation(center, geocoderInstance);
+
+  //       markerInstance.addListener("dragend", () => {
+  //         const newPosition = markerInstance.getPosition();
+  //         if (newPosition) updateLocation(newPosition, geocoderInstance);
+  //       });
+
+  //       mapInstance.addListener("click", (e: google.maps.MapMouseEvent) => {
+  //         if (e.latLng) {
+  //           markerInstance.setPosition(e.latLng);
+  //           updateLocation(e.latLng, geocoderInstance);
+  //         }
+  //       });
+
+  //       setMap(mapInstance);
+  //       setMarker(markerInstance);
+  //       setGeocoder(geocoderInstance);
+  //       setMapLoading(false);
+
+  //       setTimeout(() => {
+  //         google.maps.event.trigger(mapInstance, "resize");
+  //       }, 100);
+  //     } catch (err) {
+  //       console.error("Map creation error:", err);
+  //       if (isMounted) {
+  //         setMapError("Failed to create map. Please try again.");
+  //         setMapLoading(false);
+  //       }
+  //     }
+  //   };
+
+  //   const updateLocation = (
+  //     location: google.maps.LatLng,
+  //     geocoder: google.maps.Geocoder
+  //   ) => {
+  //     if (!isMounted) return;
+  //     geocoder.geocode({ location }, (results, status) => {
+  //       if (!isMounted) return;
+  //       if (status === "OK" && results?.[0]) {
+  //         const address = results[0].formatted_address;
+  //         setUserDetails((prev) => ({
+  //           ...prev,
+  //           location: {
+  //             address,
+  //             lat: location.lat(),
+  //             lng: location.lng(),
+  //           },
+  //         }));
+  //       } else {
+  //         setMapError("Could not find address for this location");
+  //       }
+  //     });
+  //   };
+
+  //   const loadScript = () => {
+  //     const script = document.createElement("script");
+  //     script.src = `https://maps.googleapis.com/maps/api/js?key=${
+  //       import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY
+  //     }`;
+  //     script.async = true;
+  //     script.defer = true;
+  //     script.onload = () => {
+  //       if (!isMounted) return;
+  //       mapScriptLoaded.current = true;
+  //       if (window.google && window.google.maps) {
+  //         initMap();
+  //       } else {
+  //         setMapError("Failed to load Google Maps. Please try again.");
+  //         setMapLoading(false);
+  //       }
+  //     };
+  //     script.onerror = () => {
+  //       if (!isMounted) return;
+  //       setMapError("Failed to load Google Maps. Please try again.");
+  //       setMapLoading(false);
+  //     };
+  //     document.head.appendChild(script);
+  //   };
+
+  //   if (mapScriptLoaded.current) {
+  //     initMap();
+  //   } else if (window.google && window.google.maps) {
+  //     mapScriptLoaded.current = true;
+  //     initMap();
+  //   } else {
+  //     loadScript();
+  //   }
+
+  //   return () => {
+  //     isMounted = false;
+  //     if (geolocationWatchId !== null) {
+  //       navigator.geolocation.clearWatch(geolocationWatchId);
+  //     }
+  //     if (marker) {
+  //       marker.setMap(null);
+  //     }
+  //   };
+  // }, [step]);
+
+  // FIXED: Google Maps Initialization
   useEffect(() => {
     if (step !== 4) return;
     if (!mapRef.current) return;
@@ -382,11 +540,12 @@ const Onboarding = () => {
           fullscreenControl: true,
         });
 
-        const markerInstance = new google.maps.Marker({
+        // FIXED: Use AdvancedMarkerElement instead of deprecated Marker
+        const markerInstance = new google.maps.marker.AdvancedMarkerElement({
           position: center,
           map: mapInstance,
-          draggable: true,
           title: "Drag to set your business location",
+          gmpDraggable: true,
         });
 
         const geocoderInstance = new google.maps.Geocoder();
@@ -394,13 +553,13 @@ const Onboarding = () => {
         updateLocation(center, geocoderInstance);
 
         markerInstance.addListener("dragend", () => {
-          const newPosition = markerInstance.getPosition();
+          const newPosition = markerInstance.position;
           if (newPosition) updateLocation(newPosition, geocoderInstance);
         });
 
         mapInstance.addListener("click", (e: google.maps.MapMouseEvent) => {
           if (e.latLng) {
-            markerInstance.setPosition(e.latLng);
+            markerInstance.position = e.latLng;
             updateLocation(e.latLng, geocoderInstance);
           }
         });
@@ -446,10 +605,16 @@ const Onboarding = () => {
     };
 
     const loadScript = () => {
+      const apiKey = import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        setMapError("Google Maps API key is missing");
+        setMapLoading(false);
+        return;
+      }
+
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${
-        import.meta.env.VITE_APP_GOOGLE_MAPS_API_KEY
-      }`;
+      // FIXED: Added libraries=marker and v=beta for AdvancedMarkerElement
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker&v=beta`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
@@ -485,7 +650,7 @@ const Onboarding = () => {
         navigator.geolocation.clearWatch(geolocationWatchId);
       }
       if (marker) {
-        marker.setMap(null);
+        marker.map = null;
       }
     };
   }, [step]);
@@ -560,8 +725,6 @@ const Onboarding = () => {
       />
     );
   };
-
-
 
   // Handle Meta login
   const handleMetaLogin = useCallback(() => {
@@ -660,8 +823,6 @@ const Onboarding = () => {
     );
   }, []);
 
-
-
   // Grant partner access to selected page
   const grantPartnerAccess = useCallback(async () => {
     if (!selectedPage) {
@@ -707,7 +868,7 @@ const Onboarding = () => {
       } else {
         const errorMsg = data.error?.message || JSON.stringify(data);
         setAccessStatus(`Error: ${errorMsg}`);
-        
+
         // Handle specific errors
         if (data.error?.code === 2556) {
           setAccessStatus("Partner access already granted");
@@ -1126,7 +1287,6 @@ const Onboarding = () => {
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Facebook and Instagram business accounts
                 </p>
-                
 
                 {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
@@ -1145,23 +1305,23 @@ const Onboarding = () => {
                             value={selectedPage?.id || ""}
                             onChange={(e) => {
                               const pageId = e.target.value;
-                              const page = pages.find(p => p.id === pageId);
+                              const page = pages.find((p) => p.id === pageId);
                               if (page) {
                                 setSelectedPage({
                                   id: page.id,
-                                  access_token: page.access_token
+                                  access_token: page.access_token,
                                 });
                               }
                             }}
                           >
-                            {pages.map(page => (
+                            {pages.map((page) => (
                               <option key={page.id} value={page.id}>
                                 {page.name}
                               </option>
                             ))}
                           </select>
                         </div>
-                        
+
                         <button
                           type="button"
                           className={`w-full px-4 py-2 rounded-lg ${
@@ -1174,20 +1334,25 @@ const Onboarding = () => {
                         >
                           {grantingAccess ? (
                             <span className="flex items-center justify-center">
-                              <Loader2 className="animate-spin mr-2" size={16} />
+                              <Loader2
+                                className="animate-spin mr-2"
+                                size={16}
+                              />
                               Granting Access...
                             </span>
                           ) : (
                             "Grant Partner Access"
                           )}
                         </button>
-                        
+
                         {accessStatus && (
-                          <p className={`text-sm ${
-                            accessStatus.includes("success") 
-                              ? "text-green-600" 
-                              : "text-red-500"
-                          }`}>
+                          <p
+                            className={`text-sm ${
+                              accessStatus.includes("success")
+                                ? "text-green-600"
+                                : "text-red-500"
+                            }`}
+                          >
                             {accessStatus}
                           </p>
                         )}
@@ -1733,4 +1898,3 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
-

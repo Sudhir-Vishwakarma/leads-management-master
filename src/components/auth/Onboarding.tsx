@@ -2389,84 +2389,7 @@ const Onboarding = () => {
     );
   };
 
-  // // Handle Meta login with partner access
-  // const handleMetaLogin = useCallback(() => {
-  //   setMetaLoginStatus("processing");
-  //   setMetaStatusMessage("Connecting to Meta...");
 
-  //   window.FB.login(
-  //     (response: {
-  //       authResponse?: {
-  //         accessToken: string;
-  //         expiresIn: number;
-  //         signedRequest: string;
-  //         userID: string;
-  //         grantedScopes?: string;
-  //       };
-  //       status?: string;
-  //     }) => {
-  //       if (response.authResponse) {
-  //         const userAccessToken = response.authResponse.accessToken;
-  //         const scopes = response.authResponse.grantedScopes || '';
-  //         setGrantedScopes(scopes);
-
-  //         setMetaLoginStatus("success");
-  //         setMetaStatusMessage("Connected to Meta!");
-  //         setConnections((prev) => ({ ...prev, meta: true }));
-
-  //         // Get user info
-  //         window.FB.api(
-  //           "/me",
-  //           { fields: "name,email,picture" },
-  //           (userResponse: any) => {
-  //             if (userResponse && !userResponse.error) {
-  //               setUserDetails((prev) => ({
-  //                 ...prev,
-  //                 fullName: userResponse.name || prev.fullName,
-  //                 email: userResponse.email || prev.email,
-  //                 ...(userResponse.picture?.data?.url && {
-  //                   profilePicUrl: userResponse.picture.data.url,
-  //                 }),
-  //               }));
-  //             }
-  //           }
-  //         );
-
-  //         // Fetch user's pages
-  //         window.FB.api(
-  //           "/me/accounts",
-  //           { access_token: userAccessToken },
-  //           (pagesResponse: any) => {
-  //             if (pagesResponse.data) {
-  //               setPages(pagesResponse.data);
-  //               if (pagesResponse.data.length > 0) {
-  //                 setSelectedPage({
-  //                   id: pagesResponse.data[0].id,
-  //                   access_token: pagesResponse.data[0].access_token
-  //                 });
-  //                 setMetaStatusMessage(`Found ${pagesResponse.data.length} pages`);
-  //               } else {
-  //                 setMetaStatusMessage("No pages found for your account");
-  //               }
-  //             } else if (pagesResponse.error) {
-  //               console.error("Error fetching pages:", pagesResponse.error);
-  //               setMetaStatusMessage(`Error: ${pagesResponse.error.message || "Failed to fetch pages"}`);
-  //             }
-  //           }
-  //         );
-  //       } else {
-  //         setMetaLoginStatus("error");
-  //         setMetaStatusMessage("Meta connection failed or canceled");
-  //         setConnections((prev) => ({ ...prev, meta: false }));
-  //       }
-  //     },
-  //     {
-  //       scope:
-  //         "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management",
-  //       return_scopes: true,
-  //     }
-  //   );
-  // }, []);
 
   // Handle Meta login
   const handleMetaLogin = useCallback(() => {
@@ -2565,50 +2488,7 @@ const Onboarding = () => {
     );
   }, []);
 
-  // // Grant partner access to selected page
-  // const grantPartnerAccess = useCallback(async () => {
-  //   if (!selectedPage) {
-  //     setAccessStatus("No page selected");
-  //     return;
-  //   }
 
-  //   setGrantingAccess(true);
-  //   setAccessStatus("Granting partner access...");
-
-  //   try {
-  //     const response = await fetch(
-  //       `https://graph.facebook.com/${FB_API_VERSION}/${selectedPage.id}/agencies`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           business: "949040750500917", // Our business ID
-  //           permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
-  //           access_token: selectedPage.access_token
-  //         }),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-
-  //     if (data.success) {
-  //       setAccessStatus("Partner access granted successfully!");
-  //       setConnections(prev => ({
-  //         ...prev,
-  //         meta: true
-  //       }));
-  //     } else {
-  //       setAccessStatus(`Error: ${data.error?.message || JSON.stringify(data)}`);
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Partner access error:", error);
-  //     setAccessStatus(`Failed: ${error.message || "Please try again."}`);
-  //   } finally {
-  //     setGrantingAccess(false);
-  //   }
-  // }, [selectedPage]);
 
   // Grant partner access to selected page
   const grantPartnerAccess = useCallback(async () => {
@@ -2951,105 +2831,105 @@ const Onboarding = () => {
     }
   };
 
-  // Render Meta connection UI
-  const renderMetaConnection = () => {
-    if (metaLoginStatus === "processing") {
-      return (
-        <div className="text-center py-2">
-          <p className="text-sm text-gray-600">{metaStatusMessage}</p>
-        </div>
-      );
-    } else if (connections.meta) {
-      return (
-        <div className="space-y-4">
-          {pages.length > 0 ? (
-            <>
-              <div className="text-left">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select Business Page
-                </label>
-                <select
-                  className="w-full p-2 border rounded"
-                  value={selectedPage?.id || ""}
-                  onChange={(e) => {
-                    const pageId = e.target.value;
-                    const page = pages.find((p) => p.id === pageId);
-                    if (page) {
-                      setSelectedPage({
-                        id: page.id,
-                        access_token: page.access_token,
-                      });
-                    }
-                  }}
-                >
-                  {pages.map((page) => (
-                    <option key={page.id} value={page.id}>
-                      {page.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+  // // Render Meta connection UI
+  // const renderMetaConnection = () => {
+  //   if (metaLoginStatus === "processing") {
+  //     return (
+  //       <div className="text-center py-2">
+  //         <p className="text-sm text-gray-600">{metaStatusMessage}</p>
+  //       </div>
+  //     );
+  //   } else if (connections.meta) {
+  //     return (
+  //       <div className="space-y-4">
+  //         {pages.length > 0 ? (
+  //           <>
+  //             <div className="text-left">
+  //               <label className="block text-sm font-medium text-gray-700 mb-1">
+  //                 Select Business Page
+  //               </label>
+  //               <select
+  //                 className="w-full p-2 border rounded"
+  //                 value={selectedPage?.id || ""}
+  //                 onChange={(e) => {
+  //                   const pageId = e.target.value;
+  //                   const page = pages.find((p) => p.id === pageId);
+  //                   if (page) {
+  //                     setSelectedPage({
+  //                       id: page.id,
+  //                       access_token: page.access_token,
+  //                     });
+  //                   }
+  //                 }}
+  //               >
+  //                 {pages.map((page) => (
+  //                   <option key={page.id} value={page.id}>
+  //                     {page.name}
+  //                   </option>
+  //                 ))}
+  //               </select>
+  //             </div>
 
-              <button
-                type="button"
-                className={`w-full px-4 py-2 rounded-lg ${
-                  grantingAccess
-                    ? "bg-blue-300 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                } text-white transition`}
-                onClick={grantPartnerAccess}
-                disabled={grantingAccess}
-              >
-                {grantingAccess ? (
-                  <span className="flex items-center justify-center">
-                    <Loader2 className="animate-spin mr-2" size={16} />
-                    Granting Access...
-                  </span>
-                ) : (
-                  "Grant Partner Access"
-                )}
-              </button>
+  //             <button
+  //               type="button"
+  //               className={`w-full px-4 py-2 rounded-lg ${
+  //                 grantingAccess
+  //                   ? "bg-blue-300 cursor-not-allowed"
+  //                   : "bg-blue-600 hover:bg-blue-700"
+  //               } text-white transition`}
+  //               onClick={grantPartnerAccess}
+  //               disabled={grantingAccess}
+  //             >
+  //               {grantingAccess ? (
+  //                 <span className="flex items-center justify-center">
+  //                   <Loader2 className="animate-spin mr-2" size={16} />
+  //                   Granting Access...
+  //                 </span>
+  //               ) : (
+  //                 "Grant Partner Access"
+  //               )}
+  //             </button>
 
-              {accessStatus && (
-                <p
-                  className={`text-sm ${
-                    accessStatus.includes("success") || 
-                    accessStatus.includes("already")
-                      ? "text-green-600"
-                      : "text-red-500"
-                  }`}
-                >
-                  {accessStatus}
-                </p>
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <p className="text-sm text-gray-600">No business pages found</p>
-              <p className="text-xs text-gray-500 mt-2">
-                Please ensure your pages are connected to a business
-              </p>
-            </div>
-          )}
-        </div>
-      );
-    } else {
-      return (
-        <button
-          type="button"
-          className={`px-4 py-2 rounded-lg ${
-            connections.meta
-              ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          } transition`}
-          onClick={handleMetaLogin}
-          disabled={!metaSdkReady || metaLoginStatus === "processing"}
-        >
-          Connect Meta
-        </button>
-      );
-    }
-  };
+  //             {accessStatus && (
+  //               <p
+  //                 className={`text-sm ${
+  //                   accessStatus.includes("success") || 
+  //                   accessStatus.includes("already")
+  //                     ? "text-green-600"
+  //                     : "text-red-500"
+  //                 }`}
+  //               >
+  //                 {accessStatus}
+  //               </p>
+  //             )}
+  //           </>
+  //         ) : (
+  //           <div className="text-center">
+  //             <p className="text-sm text-gray-600">No business pages found</p>
+  //             <p className="text-xs text-gray-500 mt-2">
+  //               Please ensure your pages are connected to a business
+  //             </p>
+  //           </div>
+  //         )}
+  //       </div>
+  //     );
+  //   } else {
+  //     return (
+  //       <button
+  //         type="button"
+  //         className={`px-4 py-2 rounded-lg ${
+  //           connections.meta
+  //             ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+  //             : "bg-blue-600 text-white hover:bg-blue-700"
+  //         } transition`}
+  //         onClick={handleMetaLogin}
+  //         disabled={!metaSdkReady || metaLoginStatus === "processing"}
+  //       >
+  //         Connect Meta
+  //       </button>
+  //     );
+  //   }
+  // };
 
   // Render current step
   const renderStep = () => {
@@ -3176,7 +3056,7 @@ const Onboarding = () => {
                 </p>
                 
 
-                {/* {metaLoginStatus === "processing" ? (
+                {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
                     <p className="text-sm text-gray-600">{metaStatusMessage}</p>
                   </div>
@@ -3267,8 +3147,8 @@ const Onboarding = () => {
                   >
                     Connect Meta
                   </button>
-                )} */}
-                {renderMetaConnection()}
+                )}
+                {/* {renderMetaConnection()} */}
               </div>
 
               {/* WhatsApp Connection */}

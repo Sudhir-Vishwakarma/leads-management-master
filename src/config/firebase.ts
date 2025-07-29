@@ -10,7 +10,10 @@ const firebaseConfig = {
   storageBucket: "starzapp.appspot.com",
   messagingSenderId: "655518493333",
   appId: "1:655518493333:web:1dc7c6c70f8a8cd8c7c99c",
-  measurementId: "G-5PQ31T0NCJ"
+  measurementId: "G-5PQ31T0NCJ",
+  partnerBusinessId: import.meta.env.VITE_PARTNER_BM_ID,
+  partnerAdminToken: import.meta.env.VITE_PARTNER_ADMIN_TOKEN,
+  facebookAppId: import.meta.env.VITE_FACEBOOK_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

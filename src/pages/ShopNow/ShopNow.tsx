@@ -91,7 +91,7 @@ const ShopNow = () => {
                 </p>
                 
                 <a
-                  href="https://ads.starz.vip/"
+                  href="https://ads.starzai.in/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

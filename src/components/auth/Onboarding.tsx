@@ -1775,57 +1775,6 @@
 
 // export default Onboarding;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 declare global {
   interface Window {
     fbAsyncInit?: () => void;
@@ -2125,7 +2074,7 @@ const Onboarding = () => {
   const [accessStatus, setAccessStatus] = useState("");
   const [grantedScopes, setGrantedScopes] = useState("");
 
-    // Initialize Facebook SDK
+  // Initialize Facebook SDK
   useEffect(() => {
     const initFacebookSdk = () => {
       if (window.FB) {
@@ -2389,7 +2338,6 @@ const Onboarding = () => {
     );
   };
 
-
   // Handle Meta login
   const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
@@ -2487,7 +2435,6 @@ const Onboarding = () => {
     );
   }, []);
 
-
   // Grant partner access to selected page
   const grantPartnerAccess = useCallback(async () => {
     if (!selectedPage) {
@@ -2533,7 +2480,7 @@ const Onboarding = () => {
       } else {
         const errorMsg = data.error?.message || JSON.stringify(data);
         setAccessStatus(`Error: ${errorMsg}`);
-        
+
         // Handle specific errors
         if (data.error?.code === 2556) {
           setAccessStatus("Partner access already granted");
@@ -2891,7 +2838,7 @@ const Onboarding = () => {
               {accessStatus && (
                 <p
                   className={`text-sm ${
-                    accessStatus.includes("success") || 
+                    accessStatus.includes("success") ||
                     accessStatus.includes("already")
                       ? "text-green-600"
                       : "text-red-500"
@@ -3052,7 +2999,6 @@ const Onboarding = () => {
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Facebook and Instagram business accounts
                 </p>
-                
 
                 {/* {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
@@ -3660,9 +3606,3 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
-
-
-
-
-
-

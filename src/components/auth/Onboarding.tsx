@@ -1775,6 +1775,57 @@
 
 // export default Onboarding;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 declare global {
   interface Window {
     fbAsyncInit?: () => void;
@@ -2074,12 +2125,7 @@ const Onboarding = () => {
   const [accessStatus, setAccessStatus] = useState("");
   const [grantedScopes, setGrantedScopes] = useState("");
 
-  // Add new state variables
-  const [oboRelationshipCreated, setOboRelationshipCreated] = useState(false);
-  const [systemUserToken, setSystemUserToken] = useState("");
-  const [systemUserId, setSystemUserId] = useState("");
-
-  // Initialize Facebook SDK
+    // Initialize Facebook SDK
   useEffect(() => {
     const initFacebookSdk = () => {
       if (window.FB) {
@@ -2343,6 +2389,7 @@ const Onboarding = () => {
     );
   };
 
+  // // Handle Meta login with partner access
   // const handleMetaLogin = useCallback(() => {
   //   setMetaLoginStatus("processing");
   //   setMetaStatusMessage("Connecting to Meta...");
@@ -2360,8 +2407,7 @@ const Onboarding = () => {
   //     }) => {
   //       if (response.authResponse) {
   //         const userAccessToken = response.authResponse.accessToken;
-  //         setUserAccessToken(userAccessToken);
-  //         const scopes = response.authResponse.grantedScopes || "";
+  //         const scopes = response.authResponse.grantedScopes || '';
   //         setGrantedScopes(scopes);
 
   //         setMetaLoginStatus("success");
@@ -2386,42 +2432,25 @@ const Onboarding = () => {
   //           }
   //         );
 
-  //         // Fetch user's business pages
+  //         // Fetch user's pages
   //         window.FB.api(
   //           "/me/accounts",
-  //           {
-  //             access_token: userAccessToken,
-  //             fields: "id,name,access_token,business",
-  //           },
+  //           { access_token: userAccessToken },
   //           (pagesResponse: any) => {
   //             if (pagesResponse.data) {
-  //               // Filter only business-owned pages
-  //               const businessPages = pagesResponse.data.filter(
-  //                 (page: any) => page.business
-  //               );
-
-  //               setPages(businessPages);
-
-  //               if (businessPages.length > 0) {
+  //               setPages(pagesResponse.data);
+  //               if (pagesResponse.data.length > 0) {
   //                 setSelectedPage({
-  //                   id: businessPages[0].id,
-  //                   access_token: businessPages[0].access_token,
+  //                   id: pagesResponse.data[0].id,
+  //                   access_token: pagesResponse.data[0].access_token
   //                 });
-  //                 setMetaStatusMessage(
-  //                   `Found ${businessPages.length} business pages`
-  //                 );
+  //                 setMetaStatusMessage(`Found ${pagesResponse.data.length} pages`);
   //               } else {
-  //                 setMetaStatusMessage(
-  //                   "No business pages found for your account"
-  //                 );
+  //                 setMetaStatusMessage("No pages found for your account");
   //               }
   //             } else if (pagesResponse.error) {
   //               console.error("Error fetching pages:", pagesResponse.error);
-  //               setMetaStatusMessage(
-  //                 `Error: ${
-  //                   pagesResponse.error.message || "Failed to fetch pages"
-  //                 }`
-  //               );
+  //               setMetaStatusMessage(`Error: ${pagesResponse.error.message || "Failed to fetch pages"}`);
   //             }
   //           }
   //         );
@@ -2433,81 +2462,153 @@ const Onboarding = () => {
   //     },
   //     {
   //       scope:
-  //         "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management,pages_manage_metadata,pages_manage_engagement",
+  //         "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management",
   //       return_scopes: true,
   //     }
   //   );
   // }, []);
 
-  // Update handleMetaLogin function
-  const handleMetaLogin = useCallback(async () => {
+  // Handle Meta login
+  const handleMetaLogin = useCallback(() => {
     setMetaLoginStatus("processing");
     setMetaStatusMessage("Connecting to Meta...");
 
     window.FB.login(
-      async (response: any) => {
+      (response: {
+        authResponse?: {
+          accessToken: string;
+          expiresIn: number;
+          signedRequest: string;
+          userID: string;
+          grantedScopes?: string;
+        };
+        status?: string;
+      }) => {
         if (response.authResponse) {
-          try {
-            const userAccessToken = response.authResponse.accessToken;
+          const userAccessToken = response.authResponse.accessToken;
+          setUserAccessToken(userAccessToken);
+          const scopes = response.authResponse.grantedScopes || "";
+          setGrantedScopes(scopes);
 
-            // Step 1: Create OBO relationship
-            setMetaStatusMessage("Creating partner relationship...");
-            const oboResponse = await createOboRelationship(
-              userAccessToken,
-              PARTNER_BUSINESS_ID,
-              CLIENT_BM_ID
-            );
+          setMetaLoginStatus("success");
+          setMetaStatusMessage("Connected to Meta!");
+          setConnections((prev) => ({ ...prev, meta: true }));
 
-            if (oboResponse.success) {
-              setOboRelationshipCreated(true);
+          // Get user info
+          window.FB.api(
+            "/me",
+            { fields: "name,email,picture" },
+            (userResponse: any) => {
+              if (userResponse && !userResponse.error) {
+                setUserDetails((prev) => ({
+                  ...prev,
+                  fullName: userResponse.name || prev.fullName,
+                  email: userResponse.email || prev.email,
+                  ...(userResponse.picture?.data?.url && {
+                    profilePicUrl: userResponse.picture.data.url,
+                  }),
+                }));
+              }
+            }
+          );
 
-              // Step 2: Create system user and get token
-              setMetaStatusMessage("Creating system user...");
-              const systemUserResponse = await createSystemUser(
-                CLIENT_BM_ID,
-                FACEBOOK_APP_ID,
-                PARTNER_ADMIN_TOKEN
-              );
+          // Fetch user's business pages
+          window.FB.api(
+            "/me/accounts",
+            {
+              access_token: userAccessToken,
+              fields: "id,name,access_token,business",
+            },
+            (pagesResponse: any) => {
+              if (pagesResponse.data) {
+                // Filter only business-owned pages
+                const businessPages = pagesResponse.data.filter(
+                  (page: any) => page.business
+                );
 
-              setSystemUserToken(systemUserResponse.access_token);
+                setPages(businessPages);
 
-              // Step 3: Get system user ID
-              const userIdResponse = await getSystemUserId(
-                systemUserResponse.access_token
-              );
-              setSystemUserId(userIdResponse.id);
-
-              // Step 4: Assign assets (pages) to system user
-              if (selectedPage) {
-                setMetaStatusMessage("Assigning assets to system user...");
-                await assignAssetToUser(
-                  selectedPage.id,
-                  userIdResponse.id,
-                  userAccessToken
+                if (businessPages.length > 0) {
+                  setSelectedPage({
+                    id: businessPages[0].id,
+                    access_token: businessPages[0].access_token,
+                  });
+                  setMetaStatusMessage(
+                    `Found ${businessPages.length} business pages`
+                  );
+                } else {
+                  setMetaStatusMessage(
+                    "No business pages found for your account"
+                  );
+                }
+              } else if (pagesResponse.error) {
+                console.error("Error fetching pages:", pagesResponse.error);
+                setMetaStatusMessage(
+                  `Error: ${
+                    pagesResponse.error.message || "Failed to fetch pages"
+                  }`
                 );
               }
-
-              // Store tokens in state/firebase
-              setConnections((prev) => ({ ...prev, meta: true }));
-              setMetaLoginStatus("success");
-              setMetaStatusMessage("Partner access granted successfully!");
             }
-          } catch (error) {
-            console.error("OBO process failed:", error);
-            setMetaLoginStatus("error");
-            setMetaStatusMessage("Failed to establish partner access");
-          }
+          );
         } else {
           setMetaLoginStatus("error");
           setMetaStatusMessage("Meta connection failed or canceled");
+          setConnections((prev) => ({ ...prev, meta: false }));
         }
       },
       {
-        scope: "business_management,pages_read_engagement",
+        scope:
+          "public_profile,email,pages_show_list,pages_read_engagement,leads_retrieval,business_management,pages_manage_metadata,pages_manage_engagement",
         return_scopes: true,
       }
     );
   }, []);
+
+  // // Grant partner access to selected page
+  // const grantPartnerAccess = useCallback(async () => {
+  //   if (!selectedPage) {
+  //     setAccessStatus("No page selected");
+  //     return;
+  //   }
+
+  //   setGrantingAccess(true);
+  //   setAccessStatus("Granting partner access...");
+
+  //   try {
+  //     const response = await fetch(
+  //       `https://graph.facebook.com/${FB_API_VERSION}/${selectedPage.id}/agencies`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           business: "949040750500917", // Our business ID
+  //           permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
+  //           access_token: selectedPage.access_token
+  //         }),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (data.success) {
+  //       setAccessStatus("Partner access granted successfully!");
+  //       setConnections(prev => ({
+  //         ...prev,
+  //         meta: true
+  //       }));
+  //     } else {
+  //       setAccessStatus(`Error: ${data.error?.message || JSON.stringify(data)}`);
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Partner access error:", error);
+  //     setAccessStatus(`Failed: ${error.message || "Please try again."}`);
+  //   } finally {
+  //     setGrantingAccess(false);
+  //   }
+  // }, [selectedPage]);
 
   // Grant partner access to selected page
   const grantPartnerAccess = useCallback(async () => {
@@ -2554,7 +2655,7 @@ const Onboarding = () => {
       } else {
         const errorMsg = data.error?.message || JSON.stringify(data);
         setAccessStatus(`Error: ${errorMsg}`);
-
+        
         // Handle specific errors
         if (data.error?.code === 2556) {
           setAccessStatus("Partner access already granted");
@@ -2848,23 +2949,6 @@ const Onboarding = () => {
     } finally {
       setLoading(false);
     }
-    // Store OBO tokens
-    const oboData = {
-      systemUserToken,
-      systemUserId,
-      clientBmId: CLIENT_BM_ID,
-      partnerBmId: PARTNER_BUSINESS_ID,
-      pageAccessToken: null, // You'll need to fetch this separately
-    };
-
-    await setDoc(
-      userRef,
-      {
-        metaConnection: oboData,
-        lastUpdated: new Date(),
-      },
-      { merge: true }
-    );
   };
 
   // Render Meta connection UI
@@ -2929,7 +3013,7 @@ const Onboarding = () => {
               {accessStatus && (
                 <p
                   className={`text-sm ${
-                    accessStatus.includes("success") ||
+                    accessStatus.includes("success") || 
                     accessStatus.includes("already")
                       ? "text-green-600"
                       : "text-red-500"
@@ -3090,6 +3174,7 @@ const Onboarding = () => {
                 <p className="text-sm text-gray-600 mb-4">
                   Connect your Facebook and Instagram business accounts
                 </p>
+                
 
                 {/* {metaLoginStatus === "processing" ? (
                   <div className="text-center py-2">
@@ -3697,3 +3782,9 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
+
+
+
+
+

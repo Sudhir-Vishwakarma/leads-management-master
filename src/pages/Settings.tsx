@@ -455,7 +455,7 @@ const Settings: React.FC = () => {
               </div>
             </button>
 
-            {isAdmin && (
+            {/* {isAdmin && (
               <button
                 onClick={() => setActiveTab("onboarding")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -469,9 +469,9 @@ const Settings: React.FC = () => {
                   Onboarding
                 </div>
               </button>
-            )}
+            )} */}
 
-            {isAdmin && (
+            {/* {isAdmin && (
               <button
                 onClick={() => setActiveTab("users")}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -490,7 +490,7 @@ const Settings: React.FC = () => {
                   )}
                 </div>
               </button>
-            )}
+            )} */}
           </nav>
         </div>
 

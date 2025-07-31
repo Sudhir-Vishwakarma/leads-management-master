@@ -22,6 +22,7 @@ import app from "../config/firebase";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { where } from "firebase/firestore";
 
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export { Timestamp };
@@ -862,5 +863,3 @@ export const getClientPhoneFromPath = (path: string): string | null => {
   const match = path.match(/\/accounts\/\d+\/discussion\/([\d+]+)/);
   return match ? match[1] : null;
 };
-
-

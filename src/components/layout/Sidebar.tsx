@@ -21,6 +21,9 @@
 //   Database as DatabaseIcon,
 //   ShoppingBag,
 //   DollarSign,
+//   Phone,
+//   GitBranch,
+//   ListTodo,
 // } from "lucide-react";
 // import { useAuth } from "../../context/AuthContext";
 // import { FcGoogle } from "react-icons/fc";
@@ -35,25 +38,29 @@
 //   const location = useLocation();
 //   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 //   const submenuRefs = useRef<{
-//     campaigns: HTMLDivElement | null;
-//     customers: HTMLDivElement | null;
+//     activities: HTMLDivElement | null;
+//     lists: HTMLDivElement | null;
+//     campaign: HTMLDivElement | null;
 //     analytics: HTMLDivElement | null;
 //   }>({
-//     campaigns: null,
-//     customers: null,
+//     activities: null,
+//     lists: null,
+//     campaign: null,
 //     analytics: null,
 //   });
 
 //   const [submenuHeights, setSubmenuHeights] = useState({
-//     campaigns: 0,
-//     customers: 0,
+//     activities: 0,
+//     lists: 0,
+//     campaign: 0,
 //     analytics: 0,
 //   });
 
 //   useEffect(() => {
 //     setSubmenuHeights({
-//       campaigns: submenuRefs.current.campaigns?.scrollHeight || 0,
-//       customers: submenuRefs.current.customers?.scrollHeight || 0,
+//       activities: submenuRefs.current.activities?.scrollHeight || 0,
+//       lists: submenuRefs.current.lists?.scrollHeight || 0,
+//       campaign: submenuRefs.current.campaign?.scrollHeight || 0,
 //       analytics: submenuRefs.current.analytics?.scrollHeight || 0,
 //     });
 //   }, []);
@@ -80,8 +87,13 @@
 //     setExpandedMenu((prev) => (prev === menu ? null : menu));
 //   };
 
-//   const isMenuActive = (path: string) =>
-//     location.pathname.startsWith(`/dashboard${path}`);
+//   // Update isMenuActive to handle root path
+//   const isMenuActive = useCallback((path: string) => {
+//     return location.pathname.startsWith(`/dashboard${path}`);
+//   }, [location.pathname]);
+
+//   // const isMenuActive = (path: string) =>
+//   //   location.pathname.startsWith(`/dashboard${path}`);
 
 //   return (
 //     <div className="h-full flex flex-col bg-background border-r border-border">
@@ -89,7 +101,7 @@
 //       <div className="flex items-center justify-between h-16 px-4 border-b border-border">
 //         <div className="flex items-center">
 //           <img
-//             src="/logo.png"
+//             src="/favicon.ico"
 //             alt="Logo"
 //             className="w-8 h-8 rounded-full animate-pulse [animation-duration:5s]"
 //           />
@@ -111,17 +123,221 @@
 //       {/* Navigation */}
 //       <div className="flex-1 flex flex-col overflow-y-auto">
 //         <nav className="px-2 py-4 space-y-1 flex-grow">
-//           <NavLink to="/dashboard" end className={({ isActive }) => getNavLinkClass(isActive)}>
-//             <LayoutDashboard className="mr-3 h-5 w-5" />
-//             Leads
+//           {/* Pipelines */}
+//           <NavLink
+//             to="/dashboard"
+//             className={({ isActive }) => getNavLinkClass(isActive)}
+//           >
+//             <GitBranch className="mr-3 h-5 w-5" />
+//             Pipelines
 //           </NavLink>
+
+//           {/* Activities */}
+//           <div>
+//             <button
+//               onClick={() => toggleMenu("activities")}
+//               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+//                 isMenuActive("/activities")
+//                   ? "bg-primary/10 text-primary"
+//                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
+//               }`}
+//             >
+//               <div className="flex items-center">
+//                 <Calendar className="mr-3 h-5 w-5" />
+//                 Activities
+//               </div>
+//               {expandedMenu === "activities" ? (
+//                 <ChevronUp className="h-4 w-4" />
+//               ) : (
+//                 <ChevronDown className="h-4 w-4" />
+//               )}
+//             </button>
+//             <div
+//               ref={(el) => (submenuRefs.current.activities = el)}
+//               className={`overflow-hidden transition-all duration-300 ease-in-out ${
+//                 expandedMenu === "activities"
+//                   ? "opacity-100"
+//                   : "opacity-0 max-h-0"
+//               }`}
+//               style={{
+//                 maxHeight:
+//                   expandedMenu === "activities"
+//                     ? `${submenuHeights.activities}px`
+//                     : "0px",
+//               }}
+//             >
+//               <div className="pl-8 space-y-1 mt-1">
+//                 <NavLink
+//                   to="/dashboard/activities/chats"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <MessageCircle className="mr-3 h-4 w-4" />
+//                   Chats
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/activities/calls"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <Phone className="mr-3 h-4 w-4" />
+//                   Calls
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/activities/tasks"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <ListTodo className="mr-3 h-4 w-4" />
+//                   Tasks
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/activities/meets"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <Calendar className="mr-3 h-4 w-4" />
+//                   Meets
+//                 </NavLink>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Lists */}
+//           <div>
+//             <button
+//               onClick={() => toggleMenu("lists")}
+//               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+//                 isMenuActive("/lists")
+//                   ?"bg-primary/10 text-primary"
+//                   :"text-muted-foreground hover:bg-muted hover:text-foreground"
+//               }`}
+//             >
+//               <div className="flex items-center">
+//                 <Users className="mr-3 h-5 w-5" />
+//                 Lists
+//               </div>
+//               {expandedMenu === "lists" ? (
+//                 <ChevronUp className="h-4 w-4" />
+//               ) : (
+//                 <ChevronDown className="h-4 w-4" />
+//               )}
+//             </button>
+//             <div
+//               ref={(el) => (submenuRefs.current.lists = el)}
+//               className={`overflow-hidden transition-all duration-300 ease-in-out ${
+//                 expandedMenu === "lists" ? "opacity-100" : "opacity-0 max-h-0"
+//               }`}
+//               style={{
+//                 maxHeight:
+//                   expandedMenu === "lists"
+//                     ? `${submenuHeights.lists}px`
+//                     : "0px",
+//               }}
+//             >
+//               <div className="pl-8 space-y-1 mt-1">
+//                 <NavLink
+//                   to="/dashboard/lists/basic"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <User className="mr-3 h-4 w-4" />
+//                   Basic
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/lists/advance"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <UserCog className="mr-3 h-4 w-4" />
+//                   Advance
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/lists/pro"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <Award className="mr-3 h-4 w-4 text-yellow-500" />
+//                   Pro
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/lists/leads"
+//                   end
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <LayoutDashboard className="mr-3 h-4 w-4" />
+//                   Leads
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/lists/data"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <DatabaseIcon className="mr-3 h-4 w-4" />
+//                   Data
+//                 </NavLink>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Campaign */}
+//           <div>
+//             <button
+//               onClick={() => toggleMenu("campaign")}
+//               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+//                 isMenuActive("/campaigns")
+//                   ? "bg-primary/10 text-primary"
+//                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
+//               }`}
+//             >
+//               <div className="flex items-center">
+//                 <Megaphone className="mr-3 h-5 w-5" />
+//                 Campaign
+//               </div>
+//               {expandedMenu === "campaign" ? (
+//                 <ChevronUp className="h-4 w-4" />
+//               ) : (
+//                 <ChevronDown className="h-4 w-4" />
+//               )}
+//             </button>
+//             <div
+//               ref={(el) => (submenuRefs.current.campaign = el)}
+//               className={`overflow-hidden transition-all duration-300 ease-in-out ${
+//                 expandedMenu === "campaign"
+//                   ? "opacity-100"
+//                   : "opacity-0 max-h-0"
+//               }`}
+//               style={{
+//                 maxHeight:
+//                   expandedMenu === "campaign"
+//                     ? `${submenuHeights.campaign}px`
+//                     : "0px",
+//               }}
+//             >
+//               <div className="pl-8 space-y-1 mt-1">
+//                 <NavLink
+//                   to="/dashboard/campaigns/meta"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <Facebook className="mr-3 h-4 w-4 text-blue-600" />
+//                   Meta
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/campaigns/google"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <FcGoogle className="mr-3 h-4 w-4" />
+//                   Google
+//                 </NavLink>
+//                 <NavLink
+//                   to="/dashboard/campaigns/whatsapp"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
+//                   <FaWhatsapp className="mr-3 h-4 w-4 text-green-500" />
+//                   WhatsApp
+//                 </NavLink>
+//               </div>
+//             </div>
+//           </div>
 
 //           {/* Analytics */}
 //           <div>
 //             <button
 //               onClick={() => toggleMenu("analytics")}
 //               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
-//                 isMenuActive("/dashboard/analytics")
+//                 isMenuActive("/analytics") || isMenuActive("/myservices")
 //                   ? "bg-primary/10 text-primary"
 //                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
 //               }`}
@@ -130,35 +346,59 @@
 //                 <BarChart2 className="mr-3 h-5 w-5" />
 //                 Analytics
 //               </div>
-//               {expandedMenu === "analytics" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+//               {expandedMenu === "analytics" ? (
+//                 <ChevronUp className="h-4 w-4" />
+//               ) : (
+//                 <ChevronDown className="h-4 w-4" />
+//               )}
 //             </button>
 //             <div
 //               ref={(el) => (submenuRefs.current.analytics = el)}
 //               className={`overflow-hidden transition-all duration-300 ease-in-out ${
-//                 expandedMenu === "analytics" ? "opacity-100" : "opacity-0 max-h-0"
+//                 expandedMenu === "analytics"
+//                   ? "opacity-100"
+//                   : "opacity-0 max-h-0"
 //               }`}
 //               style={{
-//                 maxHeight: expandedMenu === "analytics" ? `${submenuHeights.analytics}px` : "0px",
+//                 maxHeight:
+//                   expandedMenu === "analytics"
+//                     ? `${submenuHeights.analytics}px`
+//                     : "0px",
 //               }}
 //             >
 //               <div className="pl-8 space-y-1 mt-1">
-//                 <NavLink to="/dashboard/analytics" className={({ isActive }) => getNavLinkClass(isActive)}>
+//                 <NavLink
+//                   to="/dashboard/analytics"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
 //                   <BarChart2 className="mr-3 h-4 w-4" />
 //                   All
 //                 </NavLink>
-//                 <NavLink to="/dashboard/myservices/sgoogle" className={({ isActive }) => getNavLinkClass(isActive)}>
+//                 <NavLink
+//                   to="/dashboard/myservices/sgoogle"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
 //                   <FcGoogle className="mr-3 h-4 w-4" />
 //                   Google
 //                 </NavLink>
-//                 <NavLink to="/dashboard/myservices/smeta" className={({ isActive }) => getNavLinkClass(isActive)}>
+//                 <NavLink
+//                   to="/dashboard/myservices/smeta"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
 //                   <Facebook className="mr-3 h-4 w-4 text-blue-600" />
 //                   Meta
 //                 </NavLink>
-//                 <NavLink to="/dashboard/myservices/swhatsapp" className={({ isActive }) => getNavLinkClass(isActive)}>
+//                 <NavLink
+//                   to="/dashboard/myservices/swhatsapp"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
 //                   <FaWhatsapp className="mr-3 h-4 w-4 text-green-500" />
 //                   WhatsApp
 //                 </NavLink>
-//                 <NavLink to="/dashboard/myservices/sweb" className={({ isActive }) => getNavLinkClass(isActive)}>
+//                 <NavLink
+//                   to="/dashboard/myservices/sweb"
+//                   className={({ isActive }) => getNavLinkClass(isActive)}
+//                 >
 //                   <Globe className="mr-3 h-4 w-4 text-blue-500" />
 //                   Web
 //                 </NavLink>
@@ -166,135 +406,56 @@
 //             </div>
 //           </div>
 
-//           <NavLink to="/dashboard/chats" className={({ isActive }) => getNavLinkClass(isActive)}>
-//             <MessageCircle className="mr-3 h-5 w-5" />
-//             Chats
-//           </NavLink>
-
-//           {/* Campaigns */}
-//           <div>
-//             <button
-//               onClick={() => toggleMenu("campaigns")}
-//               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
-//                 isMenuActive("/dashboard/campaigns")
-//                   ? "bg-primary/10 text-primary"
-//                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
-//               }`}
-//             >
-//               <div className="flex items-center">
-//                 <Megaphone className="mr-3 h-5 w-5" />
-//                 Campaigns
-//               </div>
-//               {expandedMenu === "campaigns" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-//             </button>
-//             <div
-//               ref={(el) => (submenuRefs.current.campaigns = el)}
-//               className={`overflow-hidden transition-all duration-300 ease-in-out ${
-//                 expandedMenu === "campaigns" ? "opacity-100" : "opacity-0 max-h-0"
-//               }`}
-//               style={{
-//                 maxHeight: expandedMenu === "campaigns" ? `${submenuHeights.campaigns}px` : "0px",
-//               }}
-//             >
-//               <div className="pl-8 space-y-1 mt-1">
-//                 <NavLink to="/dashboard/campaigns/meta" className={({ isActive }) => getNavLinkClass(isActive)}>
-//                   <Facebook className="mr-3 h-4 w-4 text-blue-600" />
-//                   Meta
-//                 </NavLink>
-//                 <NavLink to="/dashboard/campaigns/google" className={({ isActive }) => getNavLinkClass(isActive)}>
-//                   <FcGoogle className="mr-3 h-4 w-4" />
-//                   Google
-//                 </NavLink>
-//                 <NavLink to="/dashboard/campaigns/whatsapp" className={({ isActive }) => getNavLinkClass(isActive)}>
-//                   <FaWhatsapp className="mr-3 h-4 w-4 text-green-500" />
-//                   WhatsApp
-//                 </NavLink>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Customers */}
-//           <div>
-//             <button
-//               onClick={() => toggleMenu("customers")}
-//               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
-//                 isMenuActive("/dashboard/customers")
-//                   ? "bg-primary/10 text-primary"
-//                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
-//               }`}
-//             >
-//               <div className="flex items-center">
-//                 <Users className="mr-3 h-5 w-5" />
-//                 Lists
-//               </div>
-//               {expandedMenu === "customers" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-//             </button>
-//             <div
-//               ref={(el) => (submenuRefs.current.customers = el)}
-//               className={`overflow-hidden transition-all duration-300 ease-in-out ${
-//                 expandedMenu === "customers" ? "opacity-100" : "opacity-0 max-h-0"
-//               }`}
-//               style={{
-//                 maxHeight: expandedMenu === "customers" ? `${submenuHeights.customers}px` : "0px",
-//               }}
-//             >
-//               <div className="pl-8 space-y-1 mt-1">
-//                 <NavLink to="/dashboard/customers/basic" className={({ isActive }) => getNavLinkClass(isActive)}>
-//                   <User className="mr-3 h-4 w-4" />
-//                   Basic
-//                 </NavLink>
-//                 <NavLink to="/dashboard/customers/advance" className={({ isActive }) => getNavLinkClass(isActive)}>
-//                   <UserCog className="mr-3 h-4 w-4" />
-//                   Advance
-//                 </NavLink>
-//                 <NavLink to="/dashboard/customers/pro" className={({ isActive }) => getNavLinkClass(isActive)}>
-//                   <Award className="mr-3 h-4 w-4 text-yellow-500" />
-//                   Pro
-//                 </NavLink>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Task/Meet */}
-//           <NavLink to="/dashboard/taskmeet" className={({ isActive }) => getNavLinkClass(isActive)}>
-//             <Calendar className="mr-3 h-5 w-5" />
-//             Task/Meet
-//           </NavLink>
-
 //           {/* Shop Now */}
-//           <NavLink to="/dashboard/shopnow" className={({ isActive }) => getNavLinkClass(isActive)}>
+//           <NavLink
+//             to="/dashboard/shopnow"
+//             className={({ isActive }) => getNavLinkClass(isActive)}
+//           >
 //             <ShoppingCart className="mr-3 h-5 w-5" />
 //             Shop Now
 //           </NavLink>
 
-//           {/* Database */}
-//           <NavLink to="/dashboard/database" className={({ isActive }) => getNavLinkClass(isActive)}>
-//             <DatabaseIcon className="mr-3 h-5 w-5" />
-//             Data
-//           </NavLink>
-
-//           {/* Order */}
-//           <NavLink to="/dashboard/orders" className={({ isActive }) => getNavLinkClass(isActive)}>
+//           {/* My Orders */}
+//           <NavLink
+//             to="/dashboard/orders"
+//             className={({ isActive }) => getNavLinkClass(isActive)}
+//           >
 //             <ShoppingBag className="mr-3 h-5 w-5" />
-//             Orders
+//             My Orders
 //           </NavLink>
 //         </nav>
 
+//         {/* Bottom Navigation Items */}
+
 //         {/* Footer */}
-//         <div className="border-t border-border px-3 py-4 flex-shrink-0">
-//           <NavLink to="/dashboard/settings" className={({ isActive }) => getNavLinkClass(isActive)}>
-//             <Settings className="mr-3 h-5 w-5" />
-//             Settings
-//           </NavLink>
+//         <div className="border-border px-2 py-2 flex-shrink-0">
+//           <div className="mt-auto">
+//             <nav className=" space-y-1 border-t border-border">
+//               {/* Setting */}
+//               <NavLink
+//                 to="/dashboard/settings"
+//                 className={({ isActive }) => getNavLinkClass(isActive)}
+//               >
+//                 <Settings className="mr-3 h-5 w-5" />
+//                 Setting
+//               </NavLink>
 
-//           {/* Save & Earn */}
-//           <NavLink to="/dashboard/saveandearn" className={({ isActive }) => getNavLinkClass(isActive)}>
-//             <DollarSign className="mr-3 h-5 w-5 text-green-600" />
-//             Refer & Earn
-//           </NavLink>
-
-//           <div className="mt-4 text-sm text-muted-foreground">Beta Version 1.0.0</div>
-//           <div className="text-xs text-muted-foreground mt-1">(There might be few issues, kindly ignore.)</div>
+//               {/* Refer & Earn */}
+//               <NavLink
+//                 to="/dashboard/saveandearn"
+//                 className={({ isActive }) => getNavLinkClass(isActive)}
+//               >
+//                 <DollarSign className="mr-3 h-5 w-5 text-green-600" />
+//                 Refer & Earn
+//               </NavLink>
+//             </nav>
+//           </div>
+//           <div className="mt-4 text-sm text-muted-foreground">
+//             Beta Version 1.0.0
+//           </div>
+//           <div className="text-xs text-muted-foreground mt-1">
+//             (There might be few issues, kindly ignore.)
+//           </div>
 
 //           <button
 //             onClick={handleSignOut}
@@ -310,6 +471,37 @@
 // };
 
 // export default Sidebar;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -435,18 +627,20 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
     setExpandedMenu((prev) => (prev === menu ? null : menu));
   };
 
-  const isMenuActive = (path: string) =>
-    location.pathname.startsWith(`/dashboard${path}`);
+  const isMenuActive = useCallback(
+    (path: string) => location.pathname.startsWith(`/dashboard${path}`),
+    [location.pathname]
+  );
 
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">
       {/* Header */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+      <div className="flex items-center justify-between h-16 px-6 border-b border-border pb-9 pt-9">
         <div className="flex items-center">
           <img
-            src="/logo.png"
+            src="/favicon.ico"
             alt="Logo"
-            className="w-8 h-8 rounded-full animate-pulse [animation-duration:5s]"
+            className="w-10 h-10 rounded-full animate-pulse [animation-duration:5s]"
           />
           <span className="ml-2 text-xl font-semibold text-foreground">
             <strong>STARZ Ai CRM</strong>
@@ -466,9 +660,10 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
       {/* Navigation */}
       <div className="flex-1 flex flex-col overflow-y-auto">
         <nav className="px-2 py-4 space-y-1 flex-grow">
-          {/* Pipelines */}
+          {/* Pipelines - Fixed with end prop */}
           <NavLink
             to="/dashboard"
+            end
             className={({ isActive }) => getNavLinkClass(isActive)}
           >
             <GitBranch className="mr-3 h-5 w-5" />
@@ -517,20 +712,20 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                   <MessageCircle className="mr-3 h-4 w-4" />
                   Chats
                 </NavLink>
-                <NavLink
+                {/* <NavLink
                   to="/dashboard/activities/calls"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <Phone className="mr-3 h-4 w-4" />
                   Calls
-                </NavLink>
-                <NavLink
+                </NavLink> */}
+                {/* <NavLink
                   to="/dashboard/activities/tasks"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <ListTodo className="mr-3 h-4 w-4" />
                   Tasks
-                </NavLink>
+                </NavLink> */}
                 <NavLink
                   to="/dashboard/activities/meets"
                   className={({ isActive }) => getNavLinkClass(isActive)}
@@ -547,9 +742,9 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             <button
               onClick={() => toggleMenu("lists")}
               className={`group flex items-center justify-between w-full px-3 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
-                isMenuActive("/lists") || location.pathname === "/dashboard"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                isMenuActive("/lists")
+                  ?"bg-primary/10 text-primary"
+                  :"text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <div className="flex items-center">
@@ -576,6 +771,21 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
             >
               <div className="pl-8 space-y-1 mt-1">
                 <NavLink
+                  to="/dashboard/lists/leads"
+                  end
+                  className={({ isActive }) => getNavLinkClass(isActive)}
+                >
+                  <LayoutDashboard className="mr-3 h-4 w-4" />
+                  Leads
+                </NavLink>
+                {/* <NavLink
+                  to="/dashboard/lists/data"
+                  className={({ isActive }) => getNavLinkClass(isActive)}
+                >
+                  <DatabaseIcon className="mr-3 h-4 w-4" />
+                  Data
+                </NavLink> */}
+                <NavLink
                   to="/dashboard/lists/basic"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
@@ -595,21 +805,6 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                 >
                   <Award className="mr-3 h-4 w-4 text-yellow-500" />
                   Pro
-                </NavLink>
-                <NavLink
-                  to="/dashboard/lists/leads"
-                  end
-                  className={({ isActive }) => getNavLinkClass(isActive)}
-                >
-                  <LayoutDashboard className="mr-3 h-4 w-4" />
-                  Leads
-                </NavLink>
-                <NavLink
-                  to="/dashboard/lists/data"
-                  className={({ isActive }) => getNavLinkClass(isActive)}
-                >
-                  <DatabaseIcon className="mr-3 h-4 w-4" />
-                  Data
                 </NavLink>
               </div>
             </div>
@@ -657,13 +852,13 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                   <Facebook className="mr-3 h-4 w-4 text-blue-600" />
                   Meta
                 </NavLink>
-                <NavLink
+                {/* <NavLink
                   to="/dashboard/campaigns/google"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <FcGoogle className="mr-3 h-4 w-4" />
                   Google
-                </NavLink>
+                </NavLink> */}
                 <NavLink
                   to="/dashboard/campaigns/whatsapp"
                   className={({ isActive }) => getNavLinkClass(isActive)}
@@ -784,17 +979,17 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               </NavLink>
 
               {/* Refer & Earn */}
-              <NavLink
+              {/* <NavLink
                 to="/dashboard/saveandearn"
                 className={({ isActive }) => getNavLinkClass(isActive)}
               >
                 <DollarSign className="mr-3 h-5 w-5 text-green-600" />
                 Refer & Earn
-              </NavLink>
+              </NavLink> */}
             </nav>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
-            Beta Version 1.0.0
+            Beta Version 2.0.1
           </div>
           <div className="text-xs text-muted-foreground mt-1">
             (There might be few issues, kindly ignore.)
@@ -814,5 +1009,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
 };
 
 export default Sidebar;
+
+
 
 

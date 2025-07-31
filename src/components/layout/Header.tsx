@@ -652,6 +652,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           title: "Data",
           subtitle: "Manage and analyze your CRM data",
         };
+      case "leads":
+        return {
+          title: "Leads",
+          subtitle: "Check Your Leads and Manage Them Effectively",
+        };  
       case "orders":
         return {
           title: "Orders",
@@ -794,3 +799,6 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 };
 
 export default Header;
+
+
+

@@ -311,6 +311,41 @@
 
 // export default Sidebar;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -433,7 +468,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
         <nav className="px-2 py-4 space-y-1 flex-grow">
           {/* Pipelines */}
           <NavLink
-            to="/dashboard/pipelines"
+            to="/dashboard"
             className={({ isActive }) => getNavLinkClass(isActive)}
           >
             <GitBranch className="mr-3 h-5 w-5" />
@@ -779,3 +814,5 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
 };
 
 export default Sidebar;
+
+

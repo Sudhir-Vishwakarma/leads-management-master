@@ -32,6 +32,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 
+
 // Industry-specific questions and keywords
 const industryData = {
   Insurance: {

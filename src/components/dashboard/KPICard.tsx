@@ -114,7 +114,7 @@ interface KPICardProps {
   color: string; // used for icon background
 }
 
-const KPICard: React.FC<KPICardProps> = ({
+export const KPICard: React.FC<KPICardProps> = ({
   title,
   value,
   icon,

@@ -839,24 +839,24 @@ const Onboarding = () => {
         return true;
       case 3:
         return true;
+      // case 4:
+        // if (
+        //   !userDetails.fullName ||
+        //   !userDetails.userName ||
+        //   !userDetails.email ||
+        //   !userDetails.location.address
+        // ) {
+        //   setError("Full Name, Username, Email, and Location are required");
+        //   return false;
+        // }
+        // return true;
+      // case 4:
+      //   if (documents.udyam.length === 0) {
+      //     setError("Udyam certificate is required");
+      //     return false;
+      //   }
+      //   return true;
       case 4:
-        if (
-          !userDetails.fullName ||
-          !userDetails.userName ||
-          !userDetails.email ||
-          !userDetails.location.address
-        ) {
-          setError("Full Name, Username, Email, and Location are required");
-          return false;
-        }
-        return true;
-      case 5:
-        if (documents.udyam.length === 0) {
-          setError("Udyam certificate is required");
-          return false;
-        }
-        return true;
-      case 6:
         return true;
       default:
         return true;

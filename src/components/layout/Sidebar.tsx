@@ -712,20 +712,20 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                   <MessageCircle className="mr-3 h-4 w-4" />
                   Chats
                 </NavLink>
-                {/* <NavLink
+                <NavLink
                   to="/dashboard/activities/calls"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <Phone className="mr-3 h-4 w-4" />
                   Calls
-                </NavLink> */}
-                {/* <NavLink
+                </NavLink>
+                <NavLink
                   to="/dashboard/activities/tasks"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <ListTodo className="mr-3 h-4 w-4" />
                   Tasks
-                </NavLink> */}
+                </NavLink>
                 <NavLink
                   to="/dashboard/activities/meets"
                   className={({ isActive }) => getNavLinkClass(isActive)}
@@ -778,13 +778,13 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                   <LayoutDashboard className="mr-3 h-4 w-4" />
                   Leads
                 </NavLink>
-                {/* <NavLink
+                <NavLink
                   to="/dashboard/lists/data"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <DatabaseIcon className="mr-3 h-4 w-4" />
                   Data
-                </NavLink> */}
+                </NavLink>
                 <NavLink
                   to="/dashboard/lists/basic"
                   className={({ isActive }) => getNavLinkClass(isActive)}
@@ -852,13 +852,13 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
                   <Facebook className="mr-3 h-4 w-4 text-blue-600" />
                   Meta
                 </NavLink>
-                {/* <NavLink
+                <NavLink
                   to="/dashboard/campaigns/google"
                   className={({ isActive }) => getNavLinkClass(isActive)}
                 >
                   <FcGoogle className="mr-3 h-4 w-4" />
                   Google
-                </NavLink> */}
+                </NavLink>
                 <NavLink
                   to="/dashboard/campaigns/whatsapp"
                   className={({ isActive }) => getNavLinkClass(isActive)}
@@ -979,13 +979,13 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               </NavLink>
 
               {/* Refer & Earn */}
-              {/* <NavLink
+              <NavLink
                 to="/dashboard/saveandearn"
                 className={({ isActive }) => getNavLinkClass(isActive)}
               >
                 <DollarSign className="mr-3 h-5 w-5 text-green-600" />
                 Refer & Earn
-              </NavLink> */}
+              </NavLink>
             </nav>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">

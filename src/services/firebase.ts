@@ -866,5 +866,15 @@ export const getClientPhoneFromPath = (path: string): string | null => {
 
 
 
-
-
+// WhatsApp Template Types and Functions
+export const getPhoneNumberIdByWABA = async (wabaId: string): Promise<string> => {
+  const accountDoc = await getDoc(doc(db, `accounts/${wabaId}`));
+  if (!accountDoc.exists()) {
+    throw new Error("Account not found");
+  }
+  const data = accountDoc.data();
+  if (!data.phoneNumber) {
+    throw new Error("Phone number ID not found in account");
+  }
+  return data.phoneNumber;
+};

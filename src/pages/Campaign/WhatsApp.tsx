@@ -24,6 +24,13 @@ import { SyncLoader } from "react-spinners";
 import { useCustomerType } from "../../context/CustomerTypeContext";
 import { fetchLeads } from "../../services/api";
 import { Lead } from "../../types";
+import { 
+  getConnectedWABA, 
+  getPhoneNumberIdByWABA 
+} from "../../services/firebase";
+import { 
+  sendTemplateMessage 
+} from "../../services/WhatsAppTemplates";
 
 const WhatsAppCampaign = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -183,36 +190,112 @@ const WhatsAppCampaign = () => {
     }
   };
 
-  const handleSendCampaign = () => {
-    if (!selectedCustomerType || !selectedTemplate) return;
+  // const handleSendCampaign = () => {
+  //   if (!selectedCustomerType || !selectedTemplate) return;
 
-    setIsSending(true);
-    setSendProgress(0);
+  //   setIsSending(true);
+  //   setSendProgress(0);
 
-    const interval = setInterval(() => {
-      setSendProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsSending(false);
-            alert("Campaign sent successfully!");
-          }, 500);
-          return 100;
+  //   const interval = setInterval(() => {
+  //     setSendProgress((prev) => {
+  //       if (prev >= 100) {
+  //         clearInterval(interval);
+  //         setTimeout(() => {
+  //           setIsSending(false);
+  //           alert("Campaign sent successfully!");
+  //         }, 500);
+  //         return 100;
+  //       }
+  //       return prev + 2;
+  //     });
+  //   }, 50);
+  // };
+  const handleSendCampaign = async () => {
+  if (!selectedCustomerType || !selectedTemplate) return;
+
+  setIsSending(true);
+  setSendProgress(0);
+
+  try {
+    const auth = getAuth(app);
+    const user = auth.currentUser;
+    if (!user || !user.phoneNumber) {
+      throw new Error("User not authenticated");
+    }
+    
+    // Get user's normalized phone number
+    const userPhone = user.phoneNumber.replace(/[^\d]/g, "");
+    
+    // Get connected WABA ID
+    const wabaId = await getConnectedWABA(userPhone);
+    
+    // Get phone number ID from WABA
+    const phoneNumberId = await getPhoneNumberIdByWABA(wabaId);
+    
+    // Get selected template
+    const template = templates.find(t => t.id === selectedTemplate);
+    if (!template) {
+      throw new Error("Selected template not found");
+    }
+
+    // Check template status
+    if (template.status !== 'APPROVED') {
+      throw new Error(`Template "${template.name}" is not approved. Status: ${template.status}`);
+    }
+
+    const totalLeads = filteredLeads.length;
+    let count = 0;
+    const errors: { lead: Lead; error: any }[] = [];
+
+    // Send messages to all filtered leads
+    for (const lead of filteredLeads) {
+      try {
+        // Clean and validate WhatsApp number
+        const cleanNumber = lead.whatsapp_number_.replace(/\D/g, '');
+        if (!cleanNumber) {
+          throw new Error("Invalid WhatsApp number");
         }
-        return prev + 2;
-      });
-    }, 50);
-  };
+
+        // Send template message
+        await sendTemplateMessage(phoneNumberId, cleanNumber, template.name);
+      } catch (error) {
+        errors.push({ lead, error });
+      }
+      
+      // Update progress
+      count++;
+      setSendProgress(Math.round((count / totalLeads) * 100));
+      
+      // Add delay to avoid rate limiting (200ms between messages)
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    setIsSending(false);
+    
+    // Show success/error summary
+    if (errors.length === 0) {
+      alert("Campaign sent successfully to all contacts!");
+    } else {
+      alert(`Campaign partially sent. Success: ${totalLeads - errors.length}, Failed: ${errors.length}. Check console for details.`);
+      console.error("Failed sends:", errors);
+    }
+  } catch (error) {
+    setIsSending(false);
+    console.error("Campaign failed:", error);
+    alert(`Campaign failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
 
   const getSelectedLeadCount = () => {
     if (!selectedCustomerType) return 0;
     return filteredLeads.length;
   };
 
-  const getSelectedTemplate = () => {
-    if (!selectedTemplate) return null;
-    return templates.find((t) => t.id === selectedTemplate);
-  };
+  // const getSelectedTemplate = () => {
+  //   if (!selectedTemplate) return null;
+  //   return templates.find((t) => t.id === selectedTemplate);
+  // };
 
   // Template navigation functions
   const goToPreviousPage = () => {
@@ -1072,12 +1155,5 @@ const WhatsAppCampaign = () => {
 };
 
 export default WhatsAppCampaign;
-
-
-
-
-
-
-
 
 

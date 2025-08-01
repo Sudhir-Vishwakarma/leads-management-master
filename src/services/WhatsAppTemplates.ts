@@ -108,3 +108,40 @@ export const fetchWhatsAppTemplates = async (
 
 
 
+// Function to send a WhatsApp template message
+// This function sends a template message using the WhatsApp Business API
+export const sendTemplateMessage = async (
+  phoneNumberId: string,
+  to: string,
+  templateName: string,
+  languageCode: string = "en"
+) => {
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to: to,
+    type: "template",
+    template: {
+      name: templateName,
+      language: {
+        code: languageCode
+      }
+    }
+  };
+
+  const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${import.meta.env.VITE_WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "Failed to send template message");
+  }
+
+  return response.json();
+};
